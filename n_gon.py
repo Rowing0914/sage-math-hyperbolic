@@ -66,7 +66,7 @@ def _(num_sides=3, x=0.0, y=0.0, auto_update=False,
 					_p = reflect_1st_pBase[h]
 					_p = R * _p
 					reflect_2nd_pBase.append(_p)
-					diff_index.append(_diff)  # 'i' already represents the diff
+					diff_index.append(_diff)
 				else:
 					# Transform sides
 					_s = reflect_1st_sides[j]
@@ -115,7 +115,7 @@ def _(num_sides=3, x=0.0, y=0.0, auto_update=False,
 			_c = cmap(_diff)
 			_c = mcolors.to_hex(_c)
 			P += i.plot(thickness=1.5, color=_c)
-			_name = f"R_i_i+{_diff}"
+			_name = f"L_i_i+{_diff}"
 			if _name not in used_colors:
 				used_colors[_name] = _c
 
