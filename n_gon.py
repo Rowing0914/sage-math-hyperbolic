@@ -1,3 +1,7 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+
 PD = HyperbolicPlane().PD()
 
 @interact
@@ -28,9 +32,11 @@ def _(num_sides=3, x=0.0, y=0.0, auto_update=False,
 
 	# reflect the sides; fix R and iterate sides; [R1-l1, R1-l2, R1-l3, ...]
 	reflect_1st_sides = list()  # n^2
-	for R in reflection_1st:  # n
-		for s in sides:  # n
+	diff_reflection_index = list()
+	for i, R in enumerate(reflection_1st):  # n
+		for j, s in enumerate(sides):  # n
 			reflect_1st_sides.append(R * s)
+			diff_reflection_index.append(abs(i - j))
 
 	# base point
 	x, y = round(x, 2), round(y, 2)
@@ -45,21 +51,22 @@ def _(num_sides=3, x=0.0, y=0.0, auto_update=False,
 	# reflect all sides once more
 	reflect_2nd_sides = list()
 	reflect_2nd_pBase = list()
-	# reflect_1st_sides: [R1-l1, R1-l2, R1-l3, ...] (n^2)
 	# reflection_2nd: [R1R1, R2R1, R3R1, ...] (n^2)
+	# reflect_1st_sides: [R1-l1, R1-l2, R1-l3, ...] (n^2)
 	
 	# For Second reflection, eg., R_{i,j}, we compute Diff in i and j to differentiate colours in plot later.
 	diff_index = list()
 	for h in range(n):
 		for ind_i, i in enumerate(range(h*n, (h+1)*n)):  # reflection transf
 			for j in range(h*n, (h+1)*n):  # side
+				_diff = diff_reflection_index[i]
 				R = reflection_2nd[i]
 				if i == j and ind_i != h:  # ind_i != h to avoid reflecting back to p-base
 					# Transform point
 					_p = reflect_1st_pBase[h]
 					_p = R * _p
 					reflect_2nd_pBase.append(_p)
-					diff_index.append(ind_i)  # 'i' already represents the diff
+					diff_index.append(_diff)  # 'i' already represents the diff
 				else:
 					# Transform sides
 					_s = reflect_1st_sides[j]
@@ -101,20 +108,44 @@ def _(num_sides=3, x=0.0, y=0.0, auto_update=False,
 	
 	# plot p-bisectors for 2nd reflections
 	if if_plot_perp_bisec:
-		color_keys = list(colors.keys())
 		used_colors = dict()
-		dict_if_plot_done = {k : False for k in set(diff_index)}
+		cmap = plt.colormaps['tab10']
 		for i, _diff in zip(list_perp_bisec, diff_index):
-			# _c = cmap[_diff]
-			_c = colors[color_keys[_diff]]
+			# print(_diff)
+			_c = cmap(_diff)
+			_c = mcolors.to_hex(_c)
 			P += i.plot(thickness=1.5, color=_c)
-			if _diff not in used_colors:
-				used_colors[_diff] = color_keys[_diff]
-		res = list()
-		for k, v in used_colors.items():
-			_label = f"R_i_i+{k}: {v}"
-			res.append(_label)
-		print("=== Colour Legend ===")
-		print(res)
+			_name = f"R_i_i+{_diff}"
+			if _name not in used_colors:
+				used_colors[_name] = _c
 
 	P.show(axes=True)
+
+	if if_plot_perp_bisec:
+
+		# num_colors = 5
+		num_colors = len(used_colors)
+		# custom_colors = ['red', 'green', 'blue', 'yellow', 'orange']  # Example list of custom colors
+		custom_colors = used_colors.values()
+
+		# Create a figure and axis for the plot
+		fig, ax = plt.subplots(figsize=(6, 1))
+
+		# Display the custom colors in a table
+		for i, (key, color) in enumerate(used_colors.items()):
+		# for i, color in enumerate(custom_colors):
+		    ax.add_patch(plt.Rectangle((i-0.5, -0.5), 1, 1, color=color, ec='black'))
+		    ax.text(i, 0, key, ha='center', va='center', color='black', fontsize=8)
+
+		# # Set labels for color indices
+		# for i, key in enumerate(used_colors.keys()):
+		#     ax.text(i, 0, key, ha='center', va='center', color='black', fontsize=8)
+
+		# Remove axis ticks and set axis limits
+		ax.set_xticks([])
+		ax.set_yticks([])
+		ax.set_xlim(-0.5, num_colors - 0.5)
+		ax.set_ylim(-0.5, 0.5)
+
+		# Show plot
+		plt.show()
