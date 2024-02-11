@@ -1,148 +1,120 @@
-n = 3
 PD = HyperbolicPlane().PD()
 
-points = list()
-for i in range(n):
-	points.append(0.5*cos((i+1)*2*pi/n) + 0.5*sin((i+1)*2*pi/n)*I)
-
-# define sides
-sides = list()
-for i in range(n):
-	if i+1 == n:
-		_side = PD.get_geodesic(points[i], points[0])
-	else:
-		_side = PD.get_geodesic(points[i], points[i+1])
-	sides.append(_side)
-
-# Get 1st reflection transformations
-reflection_1st = [l.reflection_involution() for l in sides]
-
-# reflect the sides
-reflect_1st_sides = list()
-for i in range(n):
-	for ii in range(n):
-		print(i, ii)
-		reflect_1st_sides.append(reflection_1st[i] * sides[ii])
-
-# define a polygon
-polygon = hyperbolic_polygon(points, model="PD", fill=True, color='purple')
-
-
 @interact
-def _(x=0.0, y=0.0):
+def _(num_sides=3, x=0.0, y=0.0, auto_update=False,
+	if_plot_sides=False, if_plot_reflect_1st_sides=False, if_plot_reflect_1st_pBase=False,
+	if_plot_reflect_2nd_sides=False, if_plot_reflect_2nd_pBase=False, if_plot_perp_bisec=False,
+	):
+
+	n = int(num_sides)
+
+	points = list()
+	for i in range(n):
+		_x, _y = 0.5*cos((i+1)*2*pi/n), 0.5*sin((i+1)*2*pi/n)
+		_x, _y = round(_x, 2), round(_y, 2)
+		points.append(_x + _y * I)
+
+	# define sides
+	sides = list()
+	for i in range(n):
+		if i+1 == n:
+			_side = PD.get_geodesic(points[i], points[0])
+		else:
+			_side = PD.get_geodesic(points[i], points[i+1])
+		sides.append(_side)
+
+	# Get 1st reflection transformations
+	reflection_1st = [l.reflection_involution() for l in sides]
+
+	# reflect the sides; fix R and iterate sides; [R1-l1, R1-l2, R1-l3, ...]
+	reflect_1st_sides = list()  # n^2
+	for R in reflection_1st:  # n
+		for s in sides:  # n
+			reflect_1st_sides.append(R * s)
+
 	# base point
+	x, y = round(x, 2), round(y, 2)
 	p_base = PD.get_point(x + y*I)
 
-	# reflect base point
+	# reflect base point: n
 	reflect_1st_pBase = [R*p_base for R in reflection_1st]
 
-	# get 2nd reflection transformations
+	# get 2nd reflection transformations: n^2
 	reflection_2nd = [l.reflection_involution() for l in reflect_1st_sides]
 
-	# reflect base point once more
-	reflect_2nd_pBase = list()
-	for R in reflection_2nd:
-		for _point in reflect_1st_pBase:
-			_p = R * _point
-			reflect_2nd_pBase.append(_p)
-
 	# reflect all sides once more
-	reflect_1st_sides = list()
-	for i in range(n):
-		for ii in range(n):
-			print(i, ii)
-			reflect_1st_sides.append(reflection_1st[i] * sides[ii])
-	R2R1_l1 = R2R1*R1_l1
-	R2R1_l2 = R2R1*R1_l2
-	R2R1_l3 = R2R1*R1_l3
-	R2R1_l4 = R2R1*R1_l4
-	R3R1_l1 = R3R1*R1_l1
-	R3R1_l2 = R3R1*R1_l2
-	R3R1_l3 = R3R1*R1_l3
-	R3R1_l4 = R3R1*R1_l4
-	R4R1_l1 = R4R1*R1_l1
-	R4R1_l2 = R4R1*R1_l2
-	R4R1_l3 = R4R1*R1_l3
-	R4R1_l4 = R4R1*R1_l4
-
-	R1R2_l1 = R1R2*R2_l1
-	R1R2_l2 = R1R2*R2_l2
-	R1R2_l3 = R1R2*R2_l3
-	R1R2_l4 = R1R2*R2_l4
-	R3R2_l1 = R3R2*R2_l1
-	R3R2_l2 = R3R2*R2_l2
-	R3R2_l3 = R3R2*R2_l3
-	R3R2_l4 = R3R2*R2_l4
-	R4R2_l1 = R4R2*R2_l1
-	R4R2_l2 = R4R2*R2_l2
-	R4R2_l3 = R4R2*R2_l3
-	R4R2_l4 = R4R2*R2_l4
-
-	R1R3_l1 = R1R3*R3_l1
-	R1R3_l2 = R1R3*R3_l2
-	R1R3_l3 = R1R3*R3_l3
-	R1R3_l4 = R1R3*R3_l4
-	R2R3_l1 = R2R3*R3_l1
-	R2R3_l2 = R2R3*R3_l2
-	R2R3_l3 = R2R3*R3_l3
-	R2R3_l4 = R2R3*R3_l4
-	R4R3_l1 = R4R3*R3_l1
-	R4R3_l2 = R4R3*R3_l2
-	R4R3_l3 = R4R3*R3_l3
-	R4R3_l4 = R4R3*R3_l4
-
-	R1R4_l1 = R1R4*R4_l1
-	R1R4_l2 = R1R4*R4_l2
-	R1R4_l3 = R1R4*R4_l3
-	R1R4_l4 = R1R4*R4_l4
-	R2R4_l1 = R2R4*R4_l1
-	R2R4_l2 = R2R4*R4_l2
-	R2R4_l3 = R2R4*R4_l3
-	R2R4_l4 = R2R4*R4_l4
-	R3R4_l1 = R3R4*R4_l1
-	R3R4_l2 = R3R4*R4_l2
-	R3R4_l3 = R3R4*R4_l3
-	R3R4_l4 = R3R4*R4_l4
+	reflect_2nd_sides = list()
+	reflect_2nd_pBase = list()
+	# reflect_1st_sides: [R1-l1, R1-l2, R1-l3, ...] (n^2)
+	# reflection_2nd: [R1R1, R2R1, R3R1, ...] (n^2)
+	
+	# For Second reflection, eg., R_{i,j}, we compute Diff in i and j to differentiate colours in plot later.
+	diff_index = list()
+	for h in range(n):
+		for ind_i, i in enumerate(range(h*n, (h+1)*n)):  # reflection transf
+			for j in range(h*n, (h+1)*n):  # side
+				R = reflection_2nd[i]
+				if i == j and ind_i != h:  # ind_i != h to avoid reflecting back to p-base
+					# Transform point
+					_p = reflect_1st_pBase[h]
+					_p = R * _p
+					reflect_2nd_pBase.append(_p)
+					diff_index.append(ind_i)  # 'i' already represents the diff
+				else:
+					# Transform sides
+					_s = reflect_1st_sides[j]
+					reflect_2nd_sides.append(R * _s)
 
 	# P-bisectors b/w 2nd reflections and base point
-	l_pBase_R2R1base = PD.get_geodesic(p_base, R2R1_pBase).perpendicular_bisector().complete()
-	l_pBase_R3R1base = PD.get_geodesic(p_base, R3R1_pBase).perpendicular_bisector().complete()
-	l_pBase_R4R1base = PD.get_geodesic(p_base, R4R1_pBase).perpendicular_bisector().complete()
-	l_pBase_R1R2base = PD.get_geodesic(p_base, R1R2_pBase).perpendicular_bisector().complete()
-	l_pBase_R3R2base = PD.get_geodesic(p_base, R3R2_pBase).perpendicular_bisector().complete()
-	l_pBase_R4R2base = PD.get_geodesic(p_base, R4R2_pBase).perpendicular_bisector().complete()
-	l_pBase_R1R3base = PD.get_geodesic(p_base, R1R3_pBase).perpendicular_bisector().complete()
-	l_pBase_R2R3base = PD.get_geodesic(p_base, R2R3_pBase).perpendicular_bisector().complete()
-	l_pBase_R4R3base = PD.get_geodesic(p_base, R4R3_pBase).perpendicular_bisector().complete()
-	l_pBase_R1R4base = PD.get_geodesic(p_base, R1R4_pBase).perpendicular_bisector().complete()
-	l_pBase_R2R4base = PD.get_geodesic(p_base, R2R4_pBase).perpendicular_bisector().complete()
-	l_pBase_R3R4base = PD.get_geodesic(p_base, R3R4_pBase).perpendicular_bisector().complete()
+	list_perp_bisec = list()
+	for p in reflect_2nd_pBase:
+		_l = PD.get_geodesic(p_base, p).perpendicular_bisector().complete()
+		list_perp_bisec.append(_l)
+
+	# plot base point
+	P = p_base.show(size=50, color="blue", legend_label='p-base')
 
 	# Plot sides
-	P = l1.plot() + l2.plot() + l3.plot() + l4.plot()
-	# plot base point
-	P += p_base.show(size=50, color="blue", legend_label='p-base')
+	if if_plot_sides:
+		for i in sides:
+			P += i.plot()
+
 	# plot reflected sides
-	P += R1_l1.plot() + R1_l2.plot() + R1_l3.plot() + R1_l4.plot()
-	P += R2_l1.plot() + R2_l2.plot() + R2_l3.plot() + R2_l4.plot()
-	P += R3_l1.plot() + R3_l2.plot() + R3_l3.plot() + R3_l4.plot()
-	P += R4_l1.plot() + R4_l2.plot() + R4_l3.plot() + R4_l4.plot()
+	if if_plot_reflect_1st_sides:
+		for i in reflect_1st_sides:
+			P += i.plot()
 
 	# plot 1st reflection of points
-	P += R1_pBase.show(color="red") + R2_pBase.show(color="red") + R3_pBase.show(color="red") + R4_pBase.show(color="red")
-	# # plot 2nd reflection of sides
-	# P += R2R1_l1.plot() + R2R1_l2.plot() + R2R1_l3.plot() + R2R1_l4.plot() + R3R1_l1.plot() + R3R1_l2.plot() + R3R1_l3.plot() + R3R1_l4.plot() + R4R1_l1.plot() + R4R1_l2.plot() + R4R1_l3.plot() + R4R1_l4.plot()
-	# P += R1R2_l1.plot() + R1R2_l2.plot() + R1R2_l3.plot() + R1R2_l4.plot() + R3R2_l1.plot() + R3R2_l2.plot() + R3R2_l3.plot() + R3R2_l4.plot() + R4R2_l1.plot() + R4R2_l2.plot() + R4R2_l3.plot() + R4R2_l4.plot()
-	# P += R1R3_l1.plot() + R1R3_l2.plot() + R1R3_l3.plot() + R1R3_l4.plot() + R2R3_l1.plot() + R2R3_l2.plot() + R2R3_l3.plot() + R2R3_l4.plot() + R4R3_l1.plot() + R4R3_l2.plot() + R4R3_l3.plot() + R4R3_l4.plot()
-	# P += R1R4_l1.plot() + R1R4_l2.plot() + R1R4_l3.plot() + R1R4_l4.plot() + R2R4_l1.plot() + R2R4_l2.plot() + R2R4_l3.plot() + R2R4_l4.plot() + R3R4_l1.plot() + R3R4_l2.plot() + R3R4_l3.plot() + R3R4_l4.plot()
-	# # # plot 2nd reflection of points
-	# P += R2R1_pBase.show(color="red") + R3R1_pBase.show(color="red")
-	# P += R1R2_pBase.show(color="red") + R3R2_pBase.show(color="red")
-	# P += R1R3_pBase.show(color="red") + R2R3_pBase.show(color="red")
-	# # plot p-bisectors for 2nd reflections
-	P += l_pBase_R2R1base.plot(thickness=2, color="orange") + l_pBase_R3R1base.plot(thickness=2, color="orange") + l_pBase_R4R1base.plot(thickness=2, color="orange")
-	P += l_pBase_R1R2base.plot(thickness=2, color="orange") + l_pBase_R3R2base.plot(thickness=2, color="orange") + l_pBase_R4R2base.plot(thickness=2, color="orange")
-	P += l_pBase_R1R3base.plot(thickness=2, color="orange") + l_pBase_R2R3base.plot(thickness=2, color="orange") + l_pBase_R4R3base.plot(thickness=2, color="orange")
-	P += l_pBase_R1R4base.plot(thickness=2, color="orange") + l_pBase_R2R4base.plot(thickness=2, color="orange") + l_pBase_R3R4base.plot(thickness=2, color="orange")
+	if if_plot_reflect_1st_pBase:
+		for i in reflect_1st_pBase:
+			P += i.show(color="red")
+
+	# plot 2nd reflection of sides
+	if if_plot_reflect_2nd_sides:
+		for i in reflect_2nd_sides:
+			P += i.plot()
+	
+	# plot 2nd reflection of points
+	if if_plot_reflect_2nd_pBase:
+		for i in reflect_2nd_pBase:
+			P += i.show(color="red")
+	
+	# plot p-bisectors for 2nd reflections
+	if if_plot_perp_bisec:
+		color_keys = list(colors.keys())
+		used_colors = dict()
+		dict_if_plot_done = {k : False for k in set(diff_index)}
+		for i, _diff in zip(list_perp_bisec, diff_index):
+			# _c = cmap[_diff]
+			_c = colors[color_keys[_diff]]
+			P += i.plot(thickness=1.5, color=_c)
+			if _diff not in used_colors:
+				used_colors[_diff] = color_keys[_diff]
+		res = list()
+		for k, v in used_colors.items():
+			_label = f"R_i_i+{k}: {v}"
+			res.append(_label)
+		print("=== Colour Legend ===")
+		print(res)
 
 	P.show(axes=True)

@@ -144,10 +144,10 @@ def _(x=0.0, y=0.0):
 	# plot base point
 	P += p_base.show(size=50, color="blue", legend_label='p-base')
 	# plot reflected sides
-	P += R1_l1.plot() + R1_l2.plot() + R1_l3.plot() + R1_l4.plot()
-	P += R2_l1.plot() + R2_l2.plot() + R2_l3.plot() + R2_l4.plot()
-	P += R3_l1.plot() + R3_l2.plot() + R3_l3.plot() + R3_l4.plot()
-	P += R4_l1.plot() + R4_l2.plot() + R4_l3.plot() + R4_l4.plot()
+	# P += R1_l1.plot() + R1_l2.plot() + R1_l3.plot() + R1_l4.plot()
+	# P += R2_l1.plot() + R2_l2.plot() + R2_l3.plot() + R2_l4.plot()
+	# P += R3_l1.plot() + R3_l2.plot() + R3_l3.plot() + R3_l4.plot()
+	# P += R4_l1.plot() + R4_l2.plot() + R4_l3.plot() + R4_l4.plot()
 
 	# plot 1st reflection of points
 	P += R1_pBase.show(color="red") + R2_pBase.show(color="red") + R3_pBase.show(color="red") + R4_pBase.show(color="red")
@@ -157,9 +157,9 @@ def _(x=0.0, y=0.0):
 	# P += R1R3_l1.plot() + R1R3_l2.plot() + R1R3_l3.plot() + R1R3_l4.plot() + R2R3_l1.plot() + R2R3_l2.plot() + R2R3_l3.plot() + R2R3_l4.plot() + R4R3_l1.plot() + R4R3_l2.plot() + R4R3_l3.plot() + R4R3_l4.plot()
 	# P += R1R4_l1.plot() + R1R4_l2.plot() + R1R4_l3.plot() + R1R4_l4.plot() + R2R4_l1.plot() + R2R4_l2.plot() + R2R4_l3.plot() + R2R4_l4.plot() + R3R4_l1.plot() + R3R4_l2.plot() + R3R4_l3.plot() + R3R4_l4.plot()
 	# # # plot 2nd reflection of points
-	# P += R2R1_pBase.show(color="red") + R3R1_pBase.show(color="red")
-	# P += R1R2_pBase.show(color="red") + R3R2_pBase.show(color="red")
-	# P += R1R3_pBase.show(color="red") + R2R3_pBase.show(color="red")
+	P += R2R1_pBase.show(color="red") + R3R1_pBase.show(color="red")
+	P += R1R2_pBase.show(color="red") + R3R2_pBase.show(color="red")
+	P += R1R3_pBase.show(color="red") + R2R3_pBase.show(color="red")
 	# # plot p-bisectors for 2nd reflections
 	P += l_pBase_R2R1base.plot(thickness=2, color="orange") + l_pBase_R3R1base.plot(thickness=2, color="orange") + l_pBase_R4R1base.plot(thickness=2, color="orange")
 	P += l_pBase_R1R2base.plot(thickness=2, color="orange") + l_pBase_R3R2base.plot(thickness=2, color="orange") + l_pBase_R4R2base.plot(thickness=2, color="orange")

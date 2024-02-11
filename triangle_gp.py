@@ -54,24 +54,24 @@ def _(x=0.0, y=0.0):
 
 	# reflect all sides once more
 	R2R1_l1 = R2R1*R1_l1
-	R2R1_l2 = R2R1*R1_l2
+	# R2R1_l2 = R2R1*R1_l2
 	R2R1_l3 = R2R1*R1_l3
 	R3R1_l1 = R3R1*R1_l1
 	R3R1_l2 = R3R1*R1_l2
-	R3R1_l3 = R3R1*R1_l3
+	# R3R1_l3 = R3R1*R1_l3
 
-	R1R2_l1 = R1R2*R2_l1
+	# R1R2_l1 = R1R2*R2_l1
 	R1R2_l2 = R1R2*R2_l2
 	R1R2_l3 = R1R2*R2_l3
 	R3R2_l1 = R3R2*R2_l1
 	R3R2_l2 = R3R2*R2_l2
-	R3R2_l3 = R3R2*R2_l3
+	# R3R2_l3 = R3R2*R2_l3
 
-	R1R3_l1 = R1R3*R3_l1
+	# R1R3_l1 = R1R3*R3_l1
 	R1R3_l2 = R1R3*R3_l2
 	R1R3_l3 = R1R3*R3_l3
 	R2R3_l1 = R2R3*R3_l1
-	R2R3_l2 = R2R3*R3_l2
+	# R2R3_l2 = R2R3*R3_l2
 	R2R3_l3 = R2R3*R3_l3
 
 	# P-bisectors b/w 2nd reflections and base point
