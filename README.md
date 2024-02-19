@@ -10,7 +10,7 @@ To initiate the interactive experience:
 1. Input the desired x and y coordinates for the Base-point.
 2. Press Enter to trigger the script, updating the visualization accordingly.
 
-### Demo
+### [Demo](https://sagecell.sagemath.org/?q=fctgej)
 - **num_sides**: Number of sides for the base polygon.
 - **i_angle**: Angle of each corner.
 - **base_pt_x, base_pt_y**: Cartesian coordinates of the Base-point of reflections.
