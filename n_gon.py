@@ -7,7 +7,7 @@ PD = HyperbolicPlane().PD()
 
 
 @interact
-def _(num_sides=3, i_angle=pi/4, base_pt_x=0.0, base_pt_y=0.0, auto_update=False, 
+def _(num_sides=4, i_angle=pi/3, base_pt_x=0.0, base_pt_y=0.0, auto_update=False, 
 	if_plot_sides=False, if_plot_reflect_1st_sides=False, if_plot_reflect_1st_pBase=False,
 	if_plot_reflect_2nd_sides=False, if_plot_reflect_2nd_pBase=False, if_plot_perp_bisec=False,
 	):
