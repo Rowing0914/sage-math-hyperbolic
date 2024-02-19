@@ -125,15 +125,13 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
 def _(num_sides=4, i_angle=pi / 3, base_pt_x=0.0, base_pt_y=0.0, auto_update=False,
       if_plot_sides=False, if_plot_reflect_1st_sides=False, if_plot_reflect_1st_pBase=False,
       if_plot_reflect_2nd_sides=False, if_plot_reflect_2nd_pBase=False, if_plot_perp_bisec=False,
+      if_show_dirichletDomain=False,
       ):
     p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind \
         = process_data(num_sides, i_angle, base_pt_x, base_pt_y)
 
     # plot base point
-    sorted(ind)
     P = p_base.show(size=50, color="blue", legend_label='p-base')
-    g = hyperbolic_polygon(pts=ind, model="PD", fill=True)
-    P += g.plot()
 
     # Plot sides
     if if_plot_sides:
@@ -171,6 +169,11 @@ def _(num_sides=4, i_angle=pi / 3, base_pt_x=0.0, base_pt_y=0.0, auto_update=Fal
             _name = f"L_i_i+{_diff}"
             if _name not in used_colors:
                 used_colors[_name] = _c
+
+    if if_show_dirichletDomain:
+        sorted(ind)
+        g = hyperbolic_polygon(pts=ind, model="PD", fill=True)
+        P += g.plot()
 
     P.show(axes=True)
 
