@@ -1,3 +1,27 @@
+# PD polygon
+from sage.plot.hyperbolic_regular_polygon import HyperbolicRegularPolygon
+sides = 6
+i_angle = pi / 2
+center = I
+polygon = HyperbolicRegularPolygon(sides, i_angle, center, {})
+
+# conformally transform: UHP -> PD
+from sage.geometry.hyperbolic_space.hyperbolic_model import moebius_transform
+pts = list()
+for p in polygon._pts:
+	_p = moebius_transform(Matrix(2, [1, -I, 1, I]), p)
+	pts.append(_p)
+g = hyperbolic_polygon(pts=pts, model="PD")
+g.plot()
+
+
+# UHP polygon
+g = hyperbolic_regular_polygon(6, pi/2)
+g.plot()
+
+
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
@@ -14,6 +38,7 @@ def _(num_sides=3, x=0.0, y=0.0, auto_update=False,
 
 	points = list()
 	for i in range(n):
+		radius = cos((i+1)*2*pi/n)
 		_x, _y = 0.5*cos((i+1)*2*pi/n), 0.5*sin((i+1)*2*pi/n)
 		_x, _y = round(_x, 2), round(_y, 2)
 		points.append(_x + _y * I)
@@ -36,7 +61,9 @@ def _(num_sides=3, x=0.0, y=0.0, auto_update=False,
 	for i, R in enumerate(reflection_1st):  # n
 		for j, s in enumerate(sides):  # n
 			reflect_1st_sides.append(R * s)
-			diff_reflection_index.append(abs(i - j))
+			_diff = abs(i - j)
+			_diff = 1 if _diff == (n - 1) else _diff  # modulo operation for cyclic ordering
+			diff_reflection_index.append(_diff)
 
 	# base point
 	x, y = round(x, 2), round(y, 2)
@@ -111,7 +138,6 @@ def _(num_sides=3, x=0.0, y=0.0, auto_update=False,
 		used_colors = dict()
 		cmap = plt.colormaps['tab10']
 		for i, _diff in zip(list_perp_bisec, diff_index):
-			# print(_diff)
 			_c = cmap(_diff)
 			_c = mcolors.to_hex(_c)
 			P += i.plot(thickness=1.5, color=_c)
