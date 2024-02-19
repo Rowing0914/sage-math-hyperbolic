@@ -121,14 +121,39 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
     return p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind
 
 
+prev_num_sides = None
+prev_i_angle = None
+prev_base_pt_x = None
+prev_base_pt_y = None
+
+# caching the computation outcomes!
+num_sides = 4
+i_angle = pi / 3
+base_pt_x = 0.0
+base_pt_y = 0.0
+p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind = process_data(
+    num_sides, i_angle, base_pt_x, base_pt_y)
+
+
 @interact
 def _(num_sides=4, i_angle=pi / 3, base_pt_x=0.0, base_pt_y=0.0, auto_update=False,
       if_plot_sides=False, if_plot_reflect_1st_sides=False, if_plot_reflect_1st_pBase=False,
       if_plot_reflect_2nd_sides=False, if_plot_reflect_2nd_pBase=False, if_plot_perp_bisec=False,
       if_show_dirichletDomain=False,
       ):
-    p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind \
-        = process_data(num_sides, i_angle, base_pt_x, base_pt_y)
+    global prev_num_sides, prev_i_angle, prev_base_pt_x, prev_base_pt_y
+    global p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind
+
+    if_rerun = num_sides != prev_num_sides or i_angle != prev_i_angle or base_pt_x != prev_base_pt_x or base_pt_y != prev_base_pt_y
+    if if_rerun:  # Check if num_sides has changed
+        # Update the previous value of num_sides
+        prev_num_sides = num_sides
+        prev_i_angle = i_angle
+        prev_base_pt_x = base_pt_x
+        prev_base_pt_y = base_pt_y
+
+        p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind \
+            = process_data(num_sides, i_angle, base_pt_x, base_pt_y)
 
     # plot base point
     P = p_base.show(size=50, color="blue", legend_label='p-base')
