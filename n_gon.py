@@ -1,47 +1,36 @@
-# PD polygon
 from sage.plot.hyperbolic_regular_polygon import HyperbolicRegularPolygon
-sides = 6
-i_angle = pi / 2
-center = I
-polygon = HyperbolicRegularPolygon(sides, i_angle, center, {})
-
-# conformally transform: UHP -> PD
-from sage.geometry.hyperbolic_space.hyperbolic_model import moebius_transform
-pts = list()
-for p in polygon._pts:
-	_p = moebius_transform(Matrix(2, [1, -I, 1, I]), p)
-	pts.append(_p)
-g = hyperbolic_polygon(pts=pts, model="PD")
-g.plot()
-
-
-# UHP polygon
-g = hyperbolic_regular_polygon(6, pi/2)
-g.plot()
-
-
-
-
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 
 PD = HyperbolicPlane().PD()
 
+
 @interact
-def _(num_sides=3, x=0.0, y=0.0, auto_update=False,
+def _(num_sides=3, i_angle=pi/4, base_pt_x=0.0, base_pt_y=0.0, auto_update=False, 
 	if_plot_sides=False, if_plot_reflect_1st_sides=False, if_plot_reflect_1st_pBase=False,
 	if_plot_reflect_2nd_sides=False, if_plot_reflect_2nd_pBase=False, if_plot_perp_bisec=False,
 	):
 
 	n = int(num_sides)
 
+	# === Construct the base polygon
+	# 1. Construct a polygon in UHP
+	center = I
+	polygon = HyperbolicRegularPolygon(num_sides, i_angle, center, {})
+
+	# 2. Conformally transform: UHP -> PD
+	from sage.geometry.hyperbolic_space.hyperbolic_model import moebius_transform
 	points = list()
-	for i in range(n):
-		radius = cos((i+1)*2*pi/n)
-		_x, _y = 0.5*cos((i+1)*2*pi/n), 0.5*sin((i+1)*2*pi/n)
-		_x, _y = round(_x, 2), round(_y, 2)
-		points.append(_x + _y * I)
+	for p in polygon._pts:
+		_p = moebius_transform(Matrix(2, [1, -I, 1, I]), p)
+		points.append(_p)
+	# g = hyperbolic_polygon(pts=points, model="PD")
+	# g.plot()
+
+	# # UHP polygon
+	# g = hyperbolic_regular_polygon(6, pi/2)
+	# g.plot()
 
 	# define sides
 	sides = list()
@@ -66,7 +55,7 @@ def _(num_sides=3, x=0.0, y=0.0, auto_update=False,
 			diff_reflection_index.append(_diff)
 
 	# base point
-	x, y = round(x, 2), round(y, 2)
+	x, y = round(base_pt_x, 2), round(base_pt_y, 2)
 	p_base = PD.get_point(x + y*I)
 
 	# reflect base point: n
