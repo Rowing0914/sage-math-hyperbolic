@@ -83,6 +83,7 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
     list_perp_bisec = list()
     for p in reflect_2nd_pBase:
         _l = PD.get_geodesic(p_base, p).perpendicular_bisector().complete()
+        # _l = PD.get_geodesic(p_base, p).perpendicular_bisector()
         list_perp_bisec.append(_l)
 
     # Compute all the intersections of perp-bisectors
@@ -105,20 +106,49 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
                 continue
 
     ind = list()
+    #
+    debug_pt = []
+    debug_line = []
+    #
+    # # print(len(intersect_p_l))
+    # # adsf
+    # p, l = intersect_p_l[-3]
+    # debug_pt = [p]
+    # debug_line = [l]
+    # cnt_not_intersect = 0
+    # for i in range(len(list_perp_bisec)):
+    #     try:
+    #         # _p = list_perp_bisec[i].angle(l)
+    #         _p = l.intersection(list_perp_bisec[i])[0]
+    #         # _p = list_perp_bisec[i].intersection(l)[0]
+    #         debug_pt.append(_p)
+    #         debug_line.append(list_perp_bisec[i])
+    #         print(p, _p, _p.dist(p), bool(abs(_p.dist(p)) < 10 ** -9))
+    #         if bool(abs(_p.dist(p)) < 10 ** -9):  # if intersect by itself at the same point
+    #             cnt_not_intersect += 1
+    #     except:
+    #         cnt_not_intersect += 1
+    #         print("no intersect", cnt_not_intersect)
+    #         pass
+    # print(cnt_not_intersect)
+    # asdf
+
     for _intersect in intersect_p_l:
         p, l = _intersect
-        cnt = 0
+        cnt_not_intersect = 0
         for i in range(len(list_perp_bisec)):
             try:
-                _p = l.intersection(list_perp_bisec[i])[0]
-                if bool(abs(_p.dist(p)) < 10 ** -9):  # if the intersection is from the same point w/h other p-bisector
-                    cnt += 1
+                # _p = l.intersection(list_perp_bisec[i])[0]  # bug: this has a different behaviour than the below...
+                _p = list_perp_bisec[i].intersection(l)[0]
+                if bool(abs(_p.dist(p)) < 10 ** -9):  # if intersect by itself at the same point
+                    cnt_not_intersect += 1
             except:
-                cnt += 1
+                cnt_not_intersect += 1
                 pass
-        if cnt == len(list_perp_bisec):
+        print(cnt_not_intersect, p)
+        if cnt_not_intersect == len(list_perp_bisec):
             ind.append(p.coordinates())
-    return p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind
+    return p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind, debug_pt, debug_line
 
 
 prev_num_sides = None
@@ -131,8 +161,8 @@ num_sides = 4
 i_angle = pi / 3
 base_pt_x = 0.0
 base_pt_y = 0.0
-p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind = process_data(
-    num_sides, i_angle, base_pt_x, base_pt_y)
+# p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind = process_data(num_sides, i_angle, base_pt_x, base_pt_y)
+p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind, debug_pt, debug_line = process_data(num_sides, i_angle, base_pt_x, base_pt_y)
 
 
 @interact
@@ -142,7 +172,7 @@ def _(num_sides=4, i_angle=pi / 3, base_pt_x=0.0, base_pt_y=0.0, auto_update=Fal
       if_show_dirichletDomain=False,
       ):
     global prev_num_sides, prev_i_angle, prev_base_pt_x, prev_base_pt_y
-    global p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind
+    global p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind, debug_pt, debug_line
 
     if_rerun = num_sides != prev_num_sides or i_angle != prev_i_angle or base_pt_x != prev_base_pt_x or base_pt_y != prev_base_pt_y
     if if_rerun:  # Check if num_sides has changed
@@ -152,11 +182,18 @@ def _(num_sides=4, i_angle=pi / 3, base_pt_x=0.0, base_pt_y=0.0, auto_update=Fal
         prev_base_pt_x = base_pt_x
         prev_base_pt_y = base_pt_y
 
-        p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind \
-            = process_data(num_sides, i_angle, base_pt_x, base_pt_y)
+        # p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind = process_data(num_sides, i_angle, base_pt_x, base_pt_y)
+        p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind, debug_pt, debug_line = process_data(num_sides, i_angle, base_pt_x, base_pt_y)
 
     # plot base point
     P = p_base.show(size=50, color="blue", legend_label='p-base')
+
+    if len(debug_pt) > 0:
+        for i in debug_pt:
+            P += i.show(color="green")
+    if len(debug_line) > 0:
+        for i in debug_line:
+            P += i.plot()
 
     # Plot sides
     if if_plot_sides:
@@ -190,31 +227,27 @@ def _(num_sides=4, i_angle=pi / 3, base_pt_x=0.0, base_pt_y=0.0, auto_update=Fal
         for i, _diff in zip(list_perp_bisec, diff_index):
             _c = cmap(_diff)
             _c = mcolors.to_hex(_c)
-            P += i.plot(thickness=1.5, color=_c)
+            P += i.plot(color=_c)
             _name = f"L_i_i+{_diff}"
             if _name not in used_colors:
                 used_colors[_name] = _c
 
     if if_show_dirichletDomain:
-        sorted(ind)
-        g = hyperbolic_polygon(pts=ind, model="PD", fill=True)
+        ind = sorted(ind, key=arg)  # sort the vertices by complex-argument for correct instantiation of polygon!
+        for p in ind:
+            p = PD.get_point(coordinates=p)
+            P += p.show(color="red", size=30)
+        g = hyperbolic_polygon(pts=ind, model="PD", fill=True, alpha=0.2)
         P += g.plot()
 
     P.show(axes=True)
 
     if if_plot_perp_bisec:
-
-        # num_colors = 5
         num_colors = len(used_colors)
-        # custom_colors = ['red', 'green', 'blue', 'yellow', 'orange']  # Example list of custom colors
-        custom_colors = used_colors.values()
-
-        # Create a figure and axis for the plot
         fig, ax = plt.subplots(figsize=(6, 1))
 
         # Display the custom colors in a table
         for i, (key, color) in enumerate(used_colors.items()):
-            # for i, color in enumerate(custom_colors):
             ax.add_patch(plt.Rectangle((i - 0.5, -0.5), 1, 1, color=color, ec='black'))
             ax.text(i, 0, key, ha='center', va='center', color='black', fontsize=8)
 
