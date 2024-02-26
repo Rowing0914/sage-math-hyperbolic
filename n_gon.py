@@ -8,7 +8,7 @@ from sage.plot.hyperbolic_regular_polygon import HyperbolicRegularPolygon
 PD = HyperbolicPlane().PD()
 UHP = HyperbolicPlane().UHP()
 
-# === Crucial steps to make computation of Dirichlet Domain work...
+# === Crucial config to make computation of Dirichlet Domain work...
 # CC = ComplexField(50)  # don't use this!
 CC = ComplexField(20)
 RR = RealField(10)
