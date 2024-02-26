@@ -48,7 +48,10 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
     diff_reflection_index = list()
     for i, R in enumerate(reflection_1st):  # n
         for j, s in enumerate(sides):  # n
-            reflect_1st_sides.append(R * s)
+            if i == j:
+                reflect_1st_sides.append(s)
+            else:
+                reflect_1st_sides.append(R * s)
             _diff = abs(i - j)
             _diff = 1 if _diff == (n - 1) else _diff  # modulo operation for cyclic ordering
             diff_reflection_index.append(_diff)
@@ -85,7 +88,7 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
                 else:
                     # Transform sides
                     _s = reflect_1st_sides[j]
-                    reflect_2nd_sides.append(R * _s)
+                    # reflect_2nd_sides.append(R * _s)
 
     # P-bisectors b/w 2nd reflections and base point
     list_perp_bisec = list()
@@ -101,14 +104,18 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
                 _p = list_perp_bisec[i].intersection(list_perp_bisec[j])[0]
                 # _p = list_perp_bisec[j].intersection(list_perp_bisec[i])[0]
 
+                """ Legacy workaround!
                 # avoid the replicates; the above workaround sometime doesn't work so manually double-check
                 if_exist = False
                 for __p in intersect_p:
                     if bool(_p.dist(__p) < 10 ** -9):
                         if_exist = True
                         break
+                print(if_exist)
                 if not if_exist:
                     intersect_p.append(_p)
+                """
+                intersect_p.append(_p)
             except Exception as e:
                 msg = str(e)
                 # print(msg)
@@ -116,7 +123,7 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
 
     table_if_exterior = np.zeros((len(intersect_p), len(reflect_2nd_pBase))).astype(bool)
     for i, p in enumerate(intersect_p):
-        for j, (p_2nd, l_perp_B) in enumerate(zip(reflect_2nd_pBase, list_perp_bisec)):
+        for j, p_2nd in enumerate(reflect_2nd_pBase):
             _d_p = p.dist(p_2nd)
             _d_p_base = p.dist(p_base)
             _d_p = RR(_d_p)
