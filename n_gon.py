@@ -1,3 +1,5 @@
+""" this version includes the computation of Dirichlet domain, which is super-expensive...."""
+
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
@@ -8,7 +10,10 @@ from sage.plot.hyperbolic_regular_polygon import HyperbolicRegularPolygon
 PD = HyperbolicPlane().PD()
 UHP = HyperbolicPlane().UHP()
 
-# === Crucial config to make computation of Dirichlet Domain work...
+""" Note
+Float-precision is crucial  to make computation of Dirichlet Domain work...
+But, the following precision causes the runtime error of computation of others when sides > 9...
+"""
 # CC = ComplexField(50)  # don't use this!
 CC = ComplexField(20)
 RR = RealField(10)
