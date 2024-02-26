@@ -8,7 +8,7 @@ from sage.plot.hyperbolic_regular_polygon import HyperbolicRegularPolygon
 PD = HyperbolicPlane().PD()
 UHP = HyperbolicPlane().UHP()
 
-# === Crucial steps to make all the computations work...
+# === Crucial steps to make computation of Dirichlet Domain work...
 # CC = ComplexField(50)  # don't use this!
 CC = ComplexField(20)
 RR = RealField(10)
@@ -75,7 +75,7 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
     # For Second reflection, eg., R_{i,j}, we compute Diff in i and j to differentiate colours in plot later.
     diff_index = list()
     for h in range(n):
-        for ind_i, i in enumerate(range(h * n, (h + 1) * n)):  # reflection transf
+        for ind_i, i in enumerate(range(h * n, (h + 1) * n)):  # Apply reflection
             for j in range(h * n, (h + 1) * n):  # side
                 _diff = diff_reflection_index[i]
                 R = reflection_2nd[i]
@@ -166,6 +166,8 @@ def _(num_sides=4, i_angle=pi / 3, base_pt_x=base_pt_y, base_pt_y=base_pt_x, aut
 
         p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind = process_data(
             num_sides, i_angle, base_pt_x, base_pt_y)
+
+    print(f"Found {len(ind)}-gon")
 
     # plot base point
     P = p_base.show(size=50, color="blue", legend_label='p-base')
