@@ -1,11 +1,17 @@
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
-from sage.all import *
 from sage.geometry.hyperbolic_space.hyperbolic_interface import HyperbolicPlane
+from sage.geometry.hyperbolic_space.hyperbolic_model import moebius_transform
 from sage.plot.hyperbolic_regular_polygon import HyperbolicRegularPolygon
 
 PD = HyperbolicPlane().PD()
+UHP = HyperbolicPlane().UHP()
+
+# === Crucial steps to make all the computations work...
+# CC = ComplexField(50)  # don't use this!
+CC = ComplexField(20)
+RR = RealField(10)
 
 
 @cached_function
@@ -14,14 +20,15 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
 
     # === Construct the base polygon
     # 1. Construct a polygon in UHP
-    center = I
+    center = CC(I)
     polygon = HyperbolicRegularPolygon(num_sides, i_angle, center, {})
 
     # 2. Conformally transform: UHP -> PD
-    from sage.geometry.hyperbolic_space.hyperbolic_model import moebius_transform
     points = list()
     for p in polygon._pts:
-        _p = moebius_transform(Matrix(2, [1, -I, 1, I]), p)
+        _p = moebius_transform(Matrix(2, [1.0, -I, 1.0, I]), p)
+        _p = PD.get_point(CC(_p))  # Change the float-point precision
+        # _p = p  # for UHP
         points.append(_p)
 
     # define sides
@@ -92,89 +99,31 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
         for j in range(i + 1, len(list_perp_bisec)):  # avoid the replicates
             try:
                 _p = list_perp_bisec[i].intersection(list_perp_bisec[j])[0]
+                # _p = list_perp_bisec[j].intersection(list_perp_bisec[i])[0]
+
                 # avoid the replicates; the above workaround sometime doesn't work so manually double-check
                 if_exist = False
                 for __p in intersect_p:
-                    if bool(abs(_p.dist(__p)) < 10 ** -9):
+                    if bool(_p.dist(__p) < 10 ** -9):
                         if_exist = True
                         break
                 if not if_exist:
                     intersect_p.append(_p)
-            except:
+            except Exception as e:
+                msg = str(e)
+                # print(msg)
                 continue
 
-    ind = list()
-    table_if_exterior = np.zeros((len(reflect_2nd_pBase), len(intersect_p))).astype(bool)
-    for i, p_2nd in enumerate(reflect_2nd_pBase):
-        for j, p in enumerate(intersect_p):
-            _d_p = p_2nd.dist(p)
-            _d_p_base = p_base.dist(p_base)
-            table_if_exterior[i, j] = _d_p > _d_p_base
-    ind = [intersect_p[i].coordinates() for i, row in enumerate(table_if_exterior) if np.alltrue(row)]
-    print(table_if_exterior)
-    print(ind)
-
-    # ==== Method 1: Intersection w/h the base point
-    # # Compute all the intersections of perp-bisectors
-    # intersect_p_l = list()
-    # for i in range(len(list_perp_bisec)):
-    #     for j in range(i + 1, len(list_perp_bisec)):  # avoid the replicates
-    #         try:
-    #             _p = list_perp_bisec[i].intersection(list_perp_bisec[j])[0]
-    #             _l = PD.get_geodesic(p_base, _p)
-    #
-    #             # avoid the replicates; the above workaround sometime doesn't work so manually double-check
-    #             if_exist = False
-    #             for (__p, __l) in intersect_p_l:
-    #                 if bool(abs(_p.dist(__p)) < 10 ** -9):
-    #                     if_exist = True
-    #                     break
-    #             if not if_exist:
-    #                 intersect_p_l.append((_p, _l))
-    #         except:
-    #             continue
-    #
-    # ind = list()
-    # debug_pt = []
-    # debug_line = []
-    #
-    # # p, l = intersect_p_l[1]
-    # # debug_pt = [p]
-    # # debug_line = [l]
-    # # cnt_not_intersect = 0
-    # # for i in range(len(list_perp_bisec)):
-    # #     try:
-    # #         # _p = list_perp_bisec[i].angle(l)
-    # #         _p = l.intersection(list_perp_bisec[i])[0]
-    # #         # _p = list_perp_bisec[i].intersection(l)[0]
-    # #         debug_pt.append(_p)
-    # #         debug_line.append(list_perp_bisec[i])
-    # #         print(p, _p, _p.dist(p), bool(abs(_p.dist(p)) < 10 ** -9), arg(p.coordinates()))
-    # #         if bool(abs(_p.dist(p)) < 10 ** -9):  # if intersect by itself at the same point
-    # #             cnt_not_intersect += 1
-    # #     except:
-    # #         cnt_not_intersect += 1
-    # #         pass
-    # # print(p, cnt_not_intersect)
-    # # # asdf
-    # #
-    # for _intersect in intersect_p_l:
-    #     p, l = _intersect
-    #     cnt_not_intersect = 0
-    #     for i in range(len(list_perp_bisec)):
-    #         try:
-    #             # _p = l.intersection(list_perp_bisec[i])[0]  # bug: this has a different behaviour than the below...
-    #             _p = list_perp_bisec[i].intersection(l)[0]
-    #             if bool(abs(_p.dist(p)) < 10 ** -9):  # if intersect by itself at the same point
-    #                 cnt_not_intersect += 1
-    #         except:
-    #             cnt_not_intersect += 1
-    #             pass
-    #     # print(cnt_not_intersect, p)
-    #     if cnt_not_intersect == len(list_perp_bisec):
-    #         ind.append(p.coordinates())
+    table_if_exterior = np.zeros((len(intersect_p), len(reflect_2nd_pBase))).astype(bool)
+    for i, p in enumerate(intersect_p):
+        for j, (p_2nd, l_perp_B) in enumerate(zip(reflect_2nd_pBase, list_perp_bisec)):
+            _d_p = p.dist(p_2nd)
+            _d_p_base = p.dist(p_base)
+            _d_p = RR(_d_p)
+            _d_p_base = RR(_d_p_base)
+            table_if_exterior[i, j] = bool(_d_p_base <= _d_p)
+    ind = [intersect_p[i].coordinates() for i, row in enumerate(table_if_exterior) if np.all(row)]
     return p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind
-    # return p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind, debug_pt, debug_line
 
 
 prev_num_sides = None
@@ -183,26 +132,22 @@ prev_base_pt_x = None
 prev_base_pt_y = None
 
 # caching the computation outcomes!
-num_sides = 3
-i_angle = pi / 4
-base_pt_x = 0.0
-base_pt_y = 0.0
+num_sides = 4
+i_angle = pi / 3
+base_pt_x = CC(0.11)
+base_pt_y = CC(0.13)
 p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind = process_data(
     num_sides, i_angle, base_pt_x, base_pt_y)
 
 
-# p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind, debug_pt, debug_line = process_data(num_sides, i_angle, base_pt_x, base_pt_y)
-
-
 @interact
-def _(num_sides=3, i_angle=pi / 4, base_pt_x=0.0, base_pt_y=0.0, auto_update=False,
+def _(num_sides=4, i_angle=pi / 3, base_pt_x=base_pt_y, base_pt_y=base_pt_x, auto_update=False,
       if_plot_sides=True, if_plot_reflect_1st_sides=False, if_plot_reflect_1st_pBase=False,
       if_plot_reflect_2nd_sides=False, if_plot_reflect_2nd_pBase=False, if_plot_perp_bisec=True,
-      if_show_dirichletDomain=False,
+      if_show_dirichletDomain=True,
       ):
     global prev_num_sides, prev_i_angle, prev_base_pt_x, prev_base_pt_y
     global p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind
-    # global p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind, debug_pt, debug_line
 
     if_rerun = num_sides != prev_num_sides or i_angle != prev_i_angle or base_pt_x != prev_base_pt_x or base_pt_y != prev_base_pt_y
     if if_rerun:  # Check if num_sides has changed
@@ -214,17 +159,9 @@ def _(num_sides=3, i_angle=pi / 4, base_pt_x=0.0, base_pt_y=0.0, auto_update=Fal
 
         p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind = process_data(
             num_sides, i_angle, base_pt_x, base_pt_y)
-        # p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind, debug_pt, debug_line = process_data(num_sides, i_angle, base_pt_x, base_pt_y)
 
     # plot base point
     P = p_base.show(size=50, color="blue", legend_label='p-base')
-
-    # if len(debug_pt) > 0:
-    #     for i in debug_pt:
-    #         P += i.show(color="green")
-    # if len(debug_line) > 0:
-    #     for i in debug_line:
-    #         P += i.plot()
 
     # Plot sides
     if if_plot_sides:
