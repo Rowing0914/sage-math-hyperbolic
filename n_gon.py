@@ -120,7 +120,15 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
                 if not if_exist:
                     intersect_p.append(_p)
                 """
-                intersect_p.append(_p)
+                # avoid the replicates; the above workaround sometime doesn't work so manually double-check
+                if_exist = False
+                for __p in intersect_p:
+                    if bool(_p.dist(__p) < 10 ** -9):
+                        if_exist = True
+                        break
+                if not if_exist:
+                    intersect_p.append(_p)
+                # intersect_p.append(_p)
             except Exception as e:
                 msg = str(e)
                 # print(msg)
@@ -146,8 +154,8 @@ prev_base_pt_y = None
 # caching the computation outcomes!
 num_sides = 4
 i_angle = pi / 3
-base_pt_x = CC(0.11)
-base_pt_y = CC(0.13)
+base_pt_x = CC(-0.11)
+base_pt_y = CC(-0.11)
 p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind = process_data(
     num_sides, i_angle, base_pt_x, base_pt_y)
 
