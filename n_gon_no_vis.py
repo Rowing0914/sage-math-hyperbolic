@@ -65,16 +65,12 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
 
     # reflect the sides; fix R and iterate sides; [R1-l1, R1-l2, R1-l3, ...]
     reflect_1st_sides = list()  # n^2
-    diff_reflection_index = list()
     for i, R in enumerate(reflection_1st):  # n
         for j, s in enumerate(sides):  # n
             if i == j:
                 reflect_1st_sides.append(s)
             else:
                 reflect_1st_sides.append(R * s)
-            _diff = abs(i - j)
-            _diff = 1 if _diff == (n - 1) else _diff  # modulo operation for cyclic ordering
-            diff_reflection_index.append(_diff)
 
     # reflect base point: n
     reflect_1st_pBase = [R * p_base for R in reflection_1st]
@@ -105,7 +101,6 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
     for h in range(n):
         for ind_i, i in enumerate(range(h * n, (h + 1) * n)):  # Apply reflection
             for j in range(h * n, (h + 1) * n):  # side
-                _diff = diff_reflection_index[i]
                 R = reflection_2nd[i]
                 if i == j and ind_i != h:  # ind_i != h to avoid reflecting back to p-base
                     # Transform point
