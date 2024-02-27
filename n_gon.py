@@ -16,7 +16,7 @@ But, the following precision causes the runtime error of computation of others w
 """
 # CC = ComplexField(50)  # don't use this!
 CC = ComplexField(20)
-RR = RealField(10)
+RR = RealField(5)
 
 
 @cached_function
@@ -153,7 +153,8 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
                 # avoid the replicates; the above workaround sometime doesn't work so manually double-check
                 if_exist = False
                 for __p in intersect_p:
-                    if bool(_p.dist(__p) < 10 ** -9):
+                    # if bool(_p.dist(__p) < 10 ** -9):
+                    if bool(_p.dist(__p) < 0.05):  # this value corresponds to float-pt precision
                         if_exist = True
                         break
                 if not if_exist:
@@ -161,7 +162,6 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
                 # intersect_p.append(_p)
             except Exception as e:
                 msg = str(e)
-                # print(msg)
                 continue
 
     table_if_exterior = np.zeros((len(intersect_p), len(reflect_2nd_pBase))).astype(bool)
@@ -169,10 +169,12 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
         for j, p_2nd in enumerate(reflect_2nd_pBase):
             _d_p = p.dist(p_2nd)
             _d_p_base = p.dist(p_base)
+            # print(i, j, _d_p, _d_p_base)
             _d_p = RR(_d_p)
             _d_p_base = RR(_d_p_base)
             table_if_exterior[i, j] = bool(_d_p_base <= _d_p)
     ind = [intersect_p[i].coordinates() for i, row in enumerate(table_if_exterior) if np.all(row)]
+    # ind = [intersect_p[i].coordinates() for i, row in enumerate(table_if_exterior)]
     return p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind
 
 
@@ -182,10 +184,11 @@ prev_base_pt_x = None
 prev_base_pt_y = None
 
 # caching the computation outcomes!
-num_sides = 3
-i_angle = pi / 4
-base_pt_x = -0.12894736842105264
-base_pt_y = -0.05526315789473685
+num_sides = 4
+i_angle = pi / 3
+base_pt_x = -0.2763157894736842
+base_pt_y = -0.16578947368421051
+
 p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind = process_data(
     num_sides, i_angle, base_pt_x, base_pt_y)
 

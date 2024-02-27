@@ -14,7 +14,7 @@ But, the following precision causes the runtime error of computation of others w
 """
 # CC = ComplexField(50)  # don't use this!
 CC = ComplexField(20)
-RR = RealField(10)
+RR = RealField(5)
 
 
 def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
@@ -75,7 +75,7 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
     # reflect base point: n
     reflect_1st_pBase = [R * p_base for R in reflection_1st]
 
-    """
+    """ we don't use this anymore..
     # === Check if the base point is in the base polygon
     table_if_interior = [False] * len(reflect_1st_pBase)
     _d_origin = abs(p_base.coordinates())
@@ -128,7 +128,8 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
                 # avoid the replicates; the above workaround sometime doesn't work so manually double-check
                 if_exist = False
                 for __p in intersect_p:
-                    if bool(_p.dist(__p) < 10 ** -9):
+                    # if bool(_p.dist(__p) < 10 ** -9):
+                    if bool(_p.dist(__p) < 0.05):  # this value corresponds to float-pt precision
                         if_exist = True
                         break
                 if not if_exist:
@@ -155,12 +156,12 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
 num_search_pt = 20
 num_sides = 3
 i_angle = pi / 4
-base_pt_x = -0.12894736842105264
-base_pt_y = -0.05526315789473685
+base_pt_x = -0.2763157894736842
+base_pt_y = -0.16578947368421051
 
-ind = process_data(num_sides, i_angle, base_pt_x, base_pt_y)
-print(len(ind))
-asdf
+# ind = process_data(num_sides, i_angle, base_pt_x, base_pt_y)
+# print(len(ind))
+# asdf
 
 res = dict()
 for base_pt_x in np.linspace(-0.35, 0.35, num_search_pt):
