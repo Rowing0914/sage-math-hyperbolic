@@ -23,10 +23,15 @@ RR = RealField(10)
 def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
     n = int(num_sides)
 
+    # base point
+    x, y = round(base_pt_x, 2), round(base_pt_y, 2)
+    p_base = PD.get_point(x + y * I)
+
     # === Construct the base polygon
     # 1. Construct a polygon in UHP
     center = CC(I)
     polygon = HyperbolicRegularPolygon(num_sides, i_angle, center, {})
+    # polygon.
 
     # 2. Conformally transform: UHP -> PD
     points = list()
@@ -45,6 +50,20 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
             _side = PD.get_geodesic(points[i], points[i + 1])
         sides.append(_side)
 
+    # === Check if the base point is in the base polygon
+    if base_pt_x == 0:  # we don't deal w/h the y-axis (infinity)
+        raise ValueError("Base point is Outside of Base Polygon")
+    l_base_origin = PD.get_geodesic(p_base, PD.get_point(0.0))
+    _cnt = 0
+    for l in sides:
+        try:
+            l_base_origin.intersection(l)[0]
+        except:
+            _cnt += 1
+    if _cnt != len(sides):
+        raise ValueError("Base point is Outside of Base Polygon")
+    # === Check if the base point is in the base polygon
+
     # Get 1st reflection transformations
     reflection_1st = [l.reflection_involution() for l in sides]
 
@@ -61,12 +80,23 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
             _diff = 1 if _diff == (n - 1) else _diff  # modulo operation for cyclic ordering
             diff_reflection_index.append(_diff)
 
-    # base point
-    x, y = round(base_pt_x, 2), round(base_pt_y, 2)
-    p_base = PD.get_point(x + y * I)
-
     # reflect base point: n
     reflect_1st_pBase = [R * p_base for R in reflection_1st]
+
+    """
+    # === Check if the base point is in the base polygon
+    table_if_interior = [False] * len(reflect_1st_pBase)
+    _d_origin = abs(p_base.coordinates())
+    _d_origin = RR(_d_origin)
+    for i, p_reflect in enumerate(reflect_1st_pBase):
+        _d_p_reflect = p_base.dist(p_reflect)
+        print(i, _d_origin, _d_p_reflect, bool(_d_origin <= _d_p_reflect))
+        _d_p_reflect = RR(_d_p_reflect)
+        table_if_interior[i] = bool(_d_origin <= _d_p_reflect)  # p-base is closer to Origin -> Interior!
+    if not all(table_if_interior):
+        return []
+    # === Check if the base point is in the base polygon
+    """
 
     # get 2nd reflection transformations: n^2
     reflection_2nd = [l.reflection_involution() for l in reflect_1st_sides]
@@ -154,8 +184,8 @@ prev_base_pt_y = None
 # caching the computation outcomes!
 num_sides = 3
 i_angle = pi / 4
-base_pt_x = CC(-0.055556)
-base_pt_y = CC(0.38889)
+base_pt_x = -0.12894736842105264
+base_pt_y = -0.05526315789473685
 p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind = process_data(
     num_sides, i_angle, base_pt_x, base_pt_y)
 

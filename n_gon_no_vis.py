@@ -157,11 +157,15 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
 
 
 # caching the computation outcomes!
-num_search_pt = 3
+num_search_pt = 20
 num_sides = 3
 i_angle = pi / 4
-base_pt_x = 0.0
-base_pt_y = 0.0
+base_pt_x = -0.12894736842105264
+base_pt_y = -0.05526315789473685
+
+ind = process_data(num_sides, i_angle, base_pt_x, base_pt_y)
+print(len(ind))
+asdf
 
 res = dict()
 for base_pt_x in np.linspace(-0.35, 0.35, num_search_pt):
@@ -178,3 +182,4 @@ df = df.T.reset_index()
 df.columns = ['Coordinates', '#sides']
 df.to_csv("result.csv")
 print(df)
+
