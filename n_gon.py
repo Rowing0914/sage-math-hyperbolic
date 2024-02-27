@@ -189,9 +189,8 @@ base_pt_y = -0.05526315789473685
 p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind = process_data(
     num_sides, i_angle, base_pt_x, base_pt_y)
 
-
 @interact
-def _(num_sides=num_sides, i_angle=i_angle, base_pt_x=base_pt_y, base_pt_y=base_pt_x, auto_update=False,
+def _(num_sides=num_sides, i_angle=i_angle, base_pt_x=base_pt_x, base_pt_y=base_pt_y, auto_update=False,
       if_plot_sides=True, if_plot_reflect_1st_sides=False, if_plot_reflect_1st_pBase=False,
       if_plot_reflect_2nd_sides=False, if_plot_reflect_2nd_pBase=False, if_plot_perp_bisec=True,
       if_show_dirichletDomain=True,
