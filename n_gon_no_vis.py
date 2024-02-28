@@ -129,7 +129,7 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
                 if_exist = False
                 for __p in intersect_p:
                     # if bool(_p.dist(__p) < 10 ** -9):
-                    if bool(_p.dist(__p) < 0.05):  # this value corresponds to float-pt precision
+                    if bool(_p.dist(__p) < 0.04):  # this value corresponds to float-pt precision
                         if_exist = True
                         break
                 if not if_exist:
@@ -179,3 +179,4 @@ df.columns = ['Coordinates', '#sides']
 df.to_csv("result.csv")
 print(df)
 
+-0.05526315789473685, 0.23947368421052628

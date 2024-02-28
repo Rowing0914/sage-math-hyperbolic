@@ -154,7 +154,7 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
                 if_exist = False
                 for __p in intersect_p:
                     # if bool(_p.dist(__p) < 10 ** -9):
-                    if bool(_p.dist(__p) < 0.05):  # this value corresponds to float-pt precision
+                    if bool(_p.dist(__p) < 0.04):  # this value corresponds to float-pt precision
                         if_exist = True
                         break
                 if not if_exist:
@@ -184,10 +184,10 @@ prev_base_pt_x = None
 prev_base_pt_y = None
 
 # caching the computation outcomes!
-num_sides = 4
-i_angle = pi / 3
-base_pt_x = -0.2763157894736842
-base_pt_y = -0.16578947368421051
+num_sides = 3
+i_angle = pi / 4
+base_pt_x = -0.16578947368421051
+base_pt_y = -0.09210526315789475
 
 p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind = process_data(
     num_sides, i_angle, base_pt_x, base_pt_y)
