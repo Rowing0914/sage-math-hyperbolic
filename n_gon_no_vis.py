@@ -12,8 +12,8 @@ UHP = HyperbolicPlane().UHP()
 Float-precision is crucial  to make computation of Dirichlet Domain work...
 But, the following precision causes the runtime error of computation of others when sides > 9...
 """
-# CC = ComplexField(50)  # don't use this!
-CC = ComplexField(20)
+# CC = ComplexField(150)  # don't use this!
+# CC = ComplexField(20)  # don't use this!
 RR = RealField(5)
 
 
@@ -21,14 +21,12 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
     n = int(num_sides)
 
     # base point
-    x, y = round(base_pt_x, 2), round(base_pt_y, 2)
-    p_base = PD.get_point(x + y * I)
+    p_base = PD.get_point(base_pt_x + base_pt_y * I)
 
     # === Construct the base polygon
     # 1. Construct a polygon in UHP
     center = CC(I)
     polygon = HyperbolicRegularPolygon(num_sides, i_angle, center, {})
-    # polygon.
 
     # 2. Conformally transform: UHP -> PD
     points = list()
@@ -120,44 +118,49 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
         _l = PD.get_geodesic(p_base, p).perpendicular_bisector().complete()
         list_perp_bisec.append(_l)
 
-    # Compute all the intersections of perp-bisectors
-    intersect_p = list()
-    table_done = {f"{i}_{j}": False for j in range(len(list_perp_bisec)) for i in range(len(list_perp_bisec))}
-    for i in range(len(list_perp_bisec)):
-        for j in range(i + 1, len(list_perp_bisec)):  # avoid the replicates
-            # print(i, j)
-            # print(table_done[f"{i}_{j}"] or table_done[f"{j}_{i}"])
-            # if table_done[f"{i}_{j}"] or table_done[f"{j}_{i}"]:
-            #     continue
-            try:
-                _p = list_perp_bisec[i].intersection(list_perp_bisec[j])[0]
-                # _p = list_perp_bisec[j].intersection(list_perp_bisec[i])[0]
+        # Compute all the intersections of perp-bisectors
+        intersect_p = list()
+        for i in range(len(list_perp_bisec)):
+            for j in range(i + 1, len(list_perp_bisec)):  # avoid the replicates
+                try:
+                    _p = list_perp_bisec[i].intersection(list_perp_bisec[j])[0]
+                    # _p = list_perp_bisec[j].intersection(list_perp_bisec[i])[0]
 
-                # avoid the replicates; the above workaround sometime doesn't work so manually double-check
-                if_exist = False
-                for __p in intersect_p:
-                    # if bool(_p.dist(__p) < 10 ** -9):
-                    if bool(_p.dist(__p) < 0.04):  # this value corresponds to float-pt precision
-                        if_exist = True
-                        break
-                if not if_exist:
                     intersect_p.append(_p)
-                # intersect_p.append(_p)
-            except Exception as e:
-                msg = str(e)
-                # print(msg)
-            table_done[f"{i}_{j}"] = True
-    # asdf
+                except Exception as e:
+                    msg = str(e)
+                    # print(msg)
+
+    ## avoid the replicates; the above workaround sometime doesn't work so manually double-check
+    new_intersect_p = list()
+    for i in range(len(intersect_p)):
+        if_exist = False
+        p = intersect_p[i]
+        for j in range(i + 1, len(intersect_p)):
+            pp = intersect_p[j]
+            print(p.dist(pp))
+            # if bool(_p.dist(__p) < 0.04):
+            if bool(p.dist(pp) < 0.01):  # this value corresponds to float-pt precision
+                if_exist = True
+                break
+        if not if_exist:
+            new_intersect_p.append(p)
+    intersect_p = new_intersect_p
+    # print(len(new_intersect_p))
+    # adfs
 
     table_if_exterior = np.zeros((len(intersect_p), len(reflect_2nd_pBase))).astype(bool)
     for i, p in enumerate(intersect_p):
         for j, p_2nd in enumerate(reflect_2nd_pBase):
             _d_p = p.dist(p_2nd)
             _d_p_base = p.dist(p_base)
+            print(i, j, _d_p, _d_p_base, bool(_d_p_base <= _d_p))
             _d_p = RR(_d_p)
             _d_p_base = RR(_d_p_base)
             table_if_exterior[i, j] = bool(_d_p_base <= _d_p)
+    print(table_if_exterior)
     ind = [intersect_p[i].coordinates() for i, row in enumerate(table_if_exterior) if np.all(row)]
+    # ind = [intersect_p[i].coordinates() for i, row in enumerate(table_if_exterior)]
     return ind
 
 

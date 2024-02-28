@@ -30,7 +30,6 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
     # 1. Construct a polygon in UHP
     center = CC(I)
     polygon = HyperbolicRegularPolygon(num_sides, i_angle, center, {})
-    # polygon.
 
     # 2. Conformally transform: UHP -> PD
     points = list()
@@ -133,30 +132,7 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
         _l = PD.get_geodesic(p_base, p).perpendicular_bisector().complete()
         list_perp_bisec.append(_l)
 
-    """
-    # # Compute all the intersections of perp-bisectors
-    # intersect_p = list()
-    # for i in range(len(list_perp_bisec)):
-    #     for j in range(i + 1, len(list_perp_bisec)):  # avoid the replicates
-    #         try:
-    #             _p = list_perp_bisec[i].intersection(list_perp_bisec[j])[0]
-    #             # _p = list_perp_bisec[j].intersection(list_perp_bisec[i])[0]
-    #
-    #             # avoid the replicates; the above workaround sometime doesn't work so manually double-check
-    #             if_exist = False
-    #             for __p in intersect_p:
-    #                 # if bool(_p.dist(__p) < 10 ** -9):
-    #                 if bool(_p.dist(__p) < 0.04):  # this value corresponds to float-pt precision
-    #                     if_exist = True
-    #                     break
-    #             if not if_exist:
-    #                 intersect_p.append(_p)
-    #             # intersect_p.append(_p)
-    #         except Exception as e:
-    #             msg = str(e)
-    #             continue    
-    """
-
+    # Compute all the intersections of perp-bisectors
     intersect_p = list()
     for i in range(len(list_perp_bisec)):
         for j in range(i + 1, len(list_perp_bisec)):  # avoid the replicates
@@ -174,7 +150,7 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
     for i in range(len(intersect_p)):
         if_exist = False
         p = intersect_p[i]
-        for j in range(i+1, len(intersect_p)):
+        for j in range(i + 1, len(intersect_p)):
             pp = intersect_p[j]
             print(p.dist(pp))
             # if bool(_p.dist(__p) < 0.04):
@@ -215,6 +191,7 @@ base_pt_y = 0.0
 
 p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind = process_data(
     num_sides, i_angle, base_pt_x, base_pt_y)
+
 
 @interact
 def _(num_sides=num_sides, i_angle=i_angle, base_pt_x=base_pt_x, base_pt_y=base_pt_y, auto_update=False,
