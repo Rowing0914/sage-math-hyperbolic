@@ -152,7 +152,7 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
         p = intersect_p[i]
         for j in range(i + 1, len(intersect_p)):
             pp = intersect_p[j]
-            print(p.dist(pp))
+            # print(p.dist(pp))
             # if bool(_p.dist(__p) < 0.04):
             if bool(p.dist(pp) < 0.01):  # this value corresponds to float-pt precision
                 if_exist = True
@@ -168,11 +168,11 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
         for j, p_2nd in enumerate(reflect_2nd_pBase):
             _d_p = p.dist(p_2nd)
             _d_p_base = p.dist(p_base)
-            print(i, j, _d_p, _d_p_base, bool(_d_p_base <= _d_p))
+            # print(i, j, _d_p, _d_p_base, bool(_d_p_base <= _d_p))
             _d_p = RR(_d_p)
             _d_p_base = RR(_d_p_base)
             table_if_exterior[i, j] = bool(_d_p_base <= _d_p)
-    print(table_if_exterior)
+    # print(table_if_exterior)
     ind = [intersect_p[i].coordinates() for i, row in enumerate(table_if_exterior) if np.all(row)]
     # ind = [intersect_p[i].coordinates() for i, row in enumerate(table_if_exterior)]
     return p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind
