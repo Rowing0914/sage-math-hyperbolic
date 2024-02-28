@@ -111,6 +111,9 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
                     # Transform sides
                     _s = reflect_1st_sides[j]
 
+    # Sort by complex-argument
+    reflect_2nd_pBase = sorted(reflect_2nd_pBase, key=lambda x: arg(x.coordinates()))
+
     # P-bisectors b/w 2nd reflections and base point
     list_perp_bisec = list()
     for p in reflect_2nd_pBase:
@@ -119,8 +122,13 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
 
     # Compute all the intersections of perp-bisectors
     intersect_p = list()
+    table_done = {f"{i}_{j}": False for j in range(len(list_perp_bisec)) for i in range(len(list_perp_bisec))}
     for i in range(len(list_perp_bisec)):
         for j in range(i + 1, len(list_perp_bisec)):  # avoid the replicates
+            # print(i, j)
+            # print(table_done[f"{i}_{j}"] or table_done[f"{j}_{i}"])
+            # if table_done[f"{i}_{j}"] or table_done[f"{j}_{i}"]:
+            #     continue
             try:
                 _p = list_perp_bisec[i].intersection(list_perp_bisec[j])[0]
                 # _p = list_perp_bisec[j].intersection(list_perp_bisec[i])[0]
@@ -138,7 +146,8 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
             except Exception as e:
                 msg = str(e)
                 # print(msg)
-                continue
+            table_done[f"{i}_{j}"] = True
+    # asdf
 
     table_if_exterior = np.zeros((len(intersect_p), len(reflect_2nd_pBase))).astype(bool)
     for i, p in enumerate(intersect_p):
@@ -156,13 +165,14 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
 num_search_pt = 20
 num_sides = 3
 i_angle = pi / 4
-base_pt_x = -0.2763157894736842
-base_pt_y = -0.16578947368421051
+base_pt_x = 0.01
+base_pt_y = 0.01
 
-# ind = process_data(num_sides, i_angle, base_pt_x, base_pt_y)
-# print(len(ind))
-# asdf
+ind = process_data(num_sides, i_angle, base_pt_x, base_pt_y)
+print(len(ind))
+asdf
 
+# Grid search
 res = dict()
 for base_pt_x in np.linspace(-0.35, 0.35, num_search_pt):
     for base_pt_y in np.linspace(-0.35, 0.35, num_search_pt):
@@ -171,12 +181,26 @@ for base_pt_x in np.linspace(-0.35, 0.35, num_search_pt):
         print(_key, len(ind))
         res[_key] = len(ind)
 
+# Organise results and store them in CSV
 import pandas as pd
 
 df = pd.DataFrame([res])
 df = df.T.reset_index()
 df.columns = ['Coordinates', '#sides']
-df.to_csv("result.csv")
+df.to_csv("3-gon.csv")
 print(df)
 
--0.05526315789473685, 0.23947368421052628
+# Visualisation
+import matplotlib.pyplot as plt
+
+df[['X', 'Y']] = df['Coordinates'].str.strip('()').str.split(', ', expand=True).astype(float)
+
+fig, ax = plt.subplots(figsize=(10, 8))
+scatter = ax.scatter(df['X'], df['Y'], c=df['#sides'], cmap='viridis', s=50)
+plt.colorbar(scatter, label='Number of Sides')
+plt.title('2D Scatter Plot of Polygon Sides')
+c = circle((0, 0), 1)
+c_matplotlib = c.matplotlib(figure=fig, sub=ax)
+ax.axis('equal')  # Set aspect ratio to be equal
+
+plt.show()
