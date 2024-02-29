@@ -1,6 +1,7 @@
 """ this version includes the computation of Dirichlet domain, which is super-expensive...."""
 
 import numpy as np
+from sage.all import *
 from sage.geometry.hyperbolic_space.hyperbolic_interface import HyperbolicPlane
 from sage.geometry.hyperbolic_space.hyperbolic_model import moebius_transform
 from sage.plot.hyperbolic_regular_polygon import HyperbolicRegularPolygon
@@ -21,7 +22,7 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
     n = int(num_sides)
 
     # base point
-    p_base = PD.get_point(base_pt_x + base_pt_y * I)
+    p_base = PD.get_point(CC(base_pt_x + I * base_pt_y))
 
     # === Construct the base polygon
     # 1. Construct a polygon in UHP
@@ -170,9 +171,9 @@ i_angle = pi / 4
 base_pt_x = 0.01
 base_pt_y = 0.01
 
-ind = process_data(num_sides, i_angle, base_pt_x, base_pt_y)
-print(len(ind))
-asdf
+# ind = process_data(num_sides, i_angle, base_pt_x, base_pt_y)
+# print(len(ind))
+# asdf
 
 # Grid search
 res = dict()
