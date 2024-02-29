@@ -20,7 +20,7 @@ RR = RealField(5)
 
 
 @cached_function
-def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
+def process_data(centre_polygon_UHP, num_sides, i_angle, base_pt_x, base_pt_y):
     n = int(num_sides)
 
     # base point
@@ -28,7 +28,7 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
 
     # === Construct the base polygon
     # 1. Construct a polygon in UHP
-    center = CC(I)
+    center = CC(centre_polygon_UHP)
     polygon = HyperbolicRegularPolygon(num_sides, i_angle, center, {})
 
     # 2. Conformally transform: UHP -> PD
@@ -150,40 +150,43 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
     return p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind
 
 
+prev_centre_polygon_UHP = None
 prev_num_sides = None
 prev_i_angle = None
 prev_base_pt_x = None
 prev_base_pt_y = None
 
 # caching the computation outcomes!
+centre_polygon_UHP = 2.0 + I
 num_sides = 3
 i_angle = pi / 4
-base_pt_x = -0.18
-base_pt_y = 0.0
+base_pt_x = 0.5
+base_pt_y = -0.5
 
 p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind = process_data(
-    num_sides, i_angle, base_pt_x, base_pt_y)
+    centre_polygon_UHP, num_sides, i_angle, base_pt_x, base_pt_y)
 
 
 @interact
-def _(num_sides=num_sides, i_angle=i_angle, base_pt_x=base_pt_x, base_pt_y=base_pt_y, auto_update=False,
+def _(centre_polygon_UHP=centre_polygon_UHP, num_sides=num_sides, i_angle=i_angle, base_pt_x=base_pt_x, base_pt_y=base_pt_y, auto_update=False,
       if_plot_sides=True, if_plot_reflect_1st_sides=False, if_plot_reflect_1st_pBase=False,
       if_plot_reflect_2nd_sides=False, if_plot_reflect_2nd_pBase=False, if_plot_perp_bisec=True,
       if_show_dirichletDomain=True,
       ):
-    global prev_num_sides, prev_i_angle, prev_base_pt_x, prev_base_pt_y
+    global prev_centre_polygon_UHP, prev_num_sides, prev_i_angle, prev_base_pt_x, prev_base_pt_y
     global p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind
 
-    if_rerun = num_sides != prev_num_sides or i_angle != prev_i_angle or base_pt_x != prev_base_pt_x or base_pt_y != prev_base_pt_y
+    if_rerun = centre_polygon_UHP != prev_centre_polygon_UHP or num_sides != prev_num_sides or i_angle != prev_i_angle or base_pt_x != prev_base_pt_x or base_pt_y != prev_base_pt_y
     if if_rerun:  # Check if num_sides has changed
         # Update the previous value of num_sides
+        prev_centre_polygon_UHP = centre_polygon_UHP
         prev_num_sides = num_sides
         prev_i_angle = i_angle
         prev_base_pt_x = base_pt_x
         prev_base_pt_y = base_pt_y
 
         p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind = process_data(
-            num_sides, i_angle, base_pt_x, base_pt_y)
+            centre_polygon_UHP, num_sides, i_angle, base_pt_x, base_pt_y)
 
     print(f"Found {len(ind)}-gon")
 
@@ -232,7 +235,8 @@ def _(num_sides=num_sides, i_angle=i_angle, base_pt_x=base_pt_x, base_pt_y=base_
         for p in ind:
             p = PD.get_point(coordinates=p)
             P += p.show(color="red", size=30)
-        g = hyperbolic_polygon(pts=ind, model="PD", fill=True, alpha=0.2)
+        # g = hyperbolic_polygon(pts=ind, model="PD", fill=True, alpha=0.2)
+        g = hyperbolic_polygon(pts=ind, model="PD", fill=True, alpha=0.0)
         P += g.plot()
 
     P.show(axes=True)

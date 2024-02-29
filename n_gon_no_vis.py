@@ -159,8 +159,8 @@ def process_data_wrapper(args):
 if __name__ == '__main__':
     # caching the computation outcomes!
     num_search_pt = 100
-    num_sides = 4
-    i_angle = pi / 3
+    num_sides = 5
+    i_angle = pi / 4
     base_pt_x = 0.01
     base_pt_y = 0.01
 
@@ -169,9 +169,12 @@ if __name__ == '__main__':
     # asdf
 
     # === Grid search
+    import time, datetime
+    start = time.time()
+    print(datetime.datetime.now())
     pool = multiprocessing.Pool()
     results = {}
-    search_space = np.linspace(-0.25, 0.25, num_search_pt)
+    search_space = np.linspace(-0.5, 0.5, num_search_pt)
     for base_pt_x in search_space:
         for base_pt_y in search_space:
             args = (num_sides, i_angle, base_pt_x, base_pt_y)
@@ -184,7 +187,8 @@ if __name__ == '__main__':
     for k, v in results.items():
         ind = v.get()
         results[k] = len(ind)
-        print(k, len(ind))
+        # print(k, len(ind))
+    print(f"{datetime.datetime.now()}: Took {time.time() - start}")
 
     # Organise results and store them in CSV
     import pandas as pd
@@ -195,18 +199,3 @@ if __name__ == '__main__':
     df.to_csv(f"{num_sides}-gon.csv")
     print(df)
 
-    # Visualisation
-    import matplotlib.pyplot as plt
-
-    df[['X', 'Y']] = df['Coordinates'].str.strip('()').str.split(', ', expand=True).astype(float)
-
-    fig, ax = plt.subplots(figsize=(10, 8))
-    scatter = ax.scatter(df['X'], df['Y'], c=df['#sides'], cmap='viridis', s=50)
-    plt.colorbar(scatter, label='Number of Sides')
-    plt.title('2D Scatter Plot of Polygon Sides')
-    c = circle((0, 0), 1)
-    c_matplotlib = c.matplotlib(figure=fig, sub=ax)
-    ax.axis('equal')  # Set aspect ratio to be equal
-
-    plt.show()
-    plt.save_fig(f"{num_sides}-gon.png")
