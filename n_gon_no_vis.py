@@ -1,6 +1,8 @@
 """ this version includes the computation of Dirichlet domain, which is super-expensive...."""
 
 import numpy as np
+import multiprocessing
+
 from sage.all import *
 from sage.geometry.hyperbolic_space.hyperbolic_interface import HyperbolicPlane
 from sage.geometry.hyperbolic_space.hyperbolic_model import moebius_transform
@@ -163,47 +165,61 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
     # ind = [intersect_p[i].coordinates() for i, row in enumerate(table_if_exterior)]
     return ind
 
+def process_data_wrapper(args):
+    num_sides, i_angle, base_pt_x, base_pt_y = args
+    return process_data(num_sides, i_angle, base_pt_x, base_pt_y)
 
-# caching the computation outcomes!
-num_search_pt = 20
-num_sides = 3
-i_angle = pi / 4
-base_pt_x = 0.01
-base_pt_y = 0.01
+if __name__ == '__main__':
+    # caching the computation outcomes!
+    num_search_pt = 100
+    num_sides = 4
+    i_angle = pi / 3
+    base_pt_x = 0.01
+    base_pt_y = 0.01
 
-# ind = process_data(num_sides, i_angle, base_pt_x, base_pt_y)
-# print(len(ind))
-# asdf
+    # ind = process_data(num_sides, i_angle, base_pt_x, base_pt_y)
+    # print(len(ind))
+    # asdf
 
-# Grid search
-res = dict()
-for base_pt_x in np.linspace(-0.35, 0.35, num_search_pt):
-    for base_pt_y in np.linspace(-0.35, 0.35, num_search_pt):
-        ind = process_data(num_sides, i_angle, base_pt_x, base_pt_y)
-        _key = f"({base_pt_x}, {base_pt_y})"
-        print(_key, len(ind))
-        res[_key] = len(ind)
+    # === Grid search
+    pool = multiprocessing.Pool()
+    results = {}
+    search_space = np.linspace(-0.25, 0.25, num_search_pt)
+    for base_pt_x in search_space:
+        for base_pt_y in search_space:
+            args = (num_sides, i_angle, base_pt_x, base_pt_y)
+            _key = f"({base_pt_x}, {base_pt_y})"
+            results[_key] = pool.apply_async(process_data_wrapper, (args,))
 
-# Organise results and store them in CSV
-import pandas as pd
+    pool.close()
+    pool.join()
 
-df = pd.DataFrame([res])
-df = df.T.reset_index()
-df.columns = ['Coordinates', '#sides']
-df.to_csv("3-gon.csv")
-print(df)
+    for k, v in results.items():
+        ind = v.get()
+        results[k] = len(ind)
+        print(k, len(ind))
 
-# Visualisation
-import matplotlib.pyplot as plt
+    # Organise results and store them in CSV
+    import pandas as pd
 
-df[['X', 'Y']] = df['Coordinates'].str.strip('()').str.split(', ', expand=True).astype(float)
+    df = pd.DataFrame([results])
+    df = df.T.reset_index()
+    df.columns = ['Coordinates', '#sides']
+    df.to_csv(f"{num_sides}-gon.csv")
+    print(df)
 
-fig, ax = plt.subplots(figsize=(10, 8))
-scatter = ax.scatter(df['X'], df['Y'], c=df['#sides'], cmap='viridis', s=50)
-plt.colorbar(scatter, label='Number of Sides')
-plt.title('2D Scatter Plot of Polygon Sides')
-c = circle((0, 0), 1)
-c_matplotlib = c.matplotlib(figure=fig, sub=ax)
-ax.axis('equal')  # Set aspect ratio to be equal
+    # Visualisation
+    import matplotlib.pyplot as plt
 
-plt.show()
+    df[['X', 'Y']] = df['Coordinates'].str.strip('()').str.split(', ', expand=True).astype(float)
+
+    fig, ax = plt.subplots(figsize=(10, 8))
+    scatter = ax.scatter(df['X'], df['Y'], c=df['#sides'], cmap='viridis', s=50)
+    plt.colorbar(scatter, label='Number of Sides')
+    plt.title('2D Scatter Plot of Polygon Sides')
+    c = circle((0, 0), 1)
+    c_matplotlib = c.matplotlib(figure=fig, sub=ax)
+    ax.axis('equal')  # Set aspect ratio to be equal
+
+    plt.show()
+    plt.save_fig(f"{num_sides}-gon.png")
