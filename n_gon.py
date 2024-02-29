@@ -140,10 +140,9 @@ def process_data(centre_polygon_UHP, num_sides, i_angle, base_pt_x, base_pt_y):
         for j, p_2nd in enumerate(reflect_2nd_pBase):
             _d_p = p.dist(p_2nd)
             _d_p_base = p.dist(p_base)
-            # print(i, j, _d_p, _d_p_base, bool(_d_p_base <= _d_p))
-            _d_p = RR(_d_p)
-            _d_p_base = RR(_d_p_base)
-            table_if_exterior[i, j] = bool(_d_p_base <= _d_p)
+            _check = bool(_d_p_base < _d_p) or bool((_d_p_base - _d_p) <= 10**-9)
+            # print(i, j, _d_p, _d_p_base, _check)
+            table_if_exterior[i, j] = _check
     # print(table_if_exterior)
     ind = [intersect_p[i].coordinates() for i, row in enumerate(table_if_exterior) if np.all(row)]
     # ind = [intersect_p[i].coordinates() for i, row in enumerate(table_if_exterior)]
@@ -157,11 +156,11 @@ prev_base_pt_x = None
 prev_base_pt_y = None
 
 # caching the computation outcomes!
-centre_polygon_UHP = 2.0 + I
+centre_polygon_UHP = I
 num_sides = 3
 i_angle = pi / 4
-base_pt_x = 0.5
-base_pt_y = -0.5
+base_pt_x = -0.18686868686868685
+base_pt_y = -0.30808080808080807
 
 p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind = process_data(
     centre_polygon_UHP, num_sides, i_angle, base_pt_x, base_pt_y)

@@ -143,10 +143,8 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
         for j, p_2nd in enumerate(reflect_2nd_pBase):
             _d_p = p.dist(p_2nd)
             _d_p_base = p.dist(p_base)
-            # print(i, j, _d_p, _d_p_base, bool(_d_p_base <= _d_p))
-            _d_p = RR(_d_p)
-            _d_p_base = RR(_d_p_base)
-            table_if_exterior[i, j] = bool(_d_p_base <= _d_p)
+            _check = bool(_d_p_base < _d_p) or bool((_d_p_base - _d_p) <= 10**-9)
+            table_if_exterior[i, j] = _check
     # print(table_if_exterior)
     ind = [intersect_p[i].coordinates() for i, row in enumerate(table_if_exterior) if np.all(row)]
     # ind = [intersect_p[i].coordinates() for i, row in enumerate(table_if_exterior)]
@@ -158,11 +156,16 @@ def process_data_wrapper(args):
 
 if __name__ == '__main__':
     # caching the computation outcomes!
-    num_search_pt = 100
-    num_sides = 5
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--num_sides", type=int, default=3)
+    parser.add_argument("--num_search_pt", type=int, default=100)
+    args = parser.parse_args()
+    num_search_pt = args.num_search_pt
+    num_sides = args.num_sides
     i_angle = pi / 4
-    base_pt_x = 0.01
-    base_pt_y = 0.01
+    base_pt_x = -0.18686868686868685
+    base_pt_y = -0.30808080808080807
 
     # ind = process_data(num_sides, i_angle, base_pt_x, base_pt_y)
     # print(len(ind))
@@ -198,4 +201,3 @@ if __name__ == '__main__':
     df.columns = ['Coordinates', '#sides']
     df.to_csv(f"{num_sides}-gon.csv")
     print(df)
-
