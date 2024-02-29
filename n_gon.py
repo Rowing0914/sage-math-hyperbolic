@@ -156,11 +156,11 @@ prev_base_pt_x = None
 prev_base_pt_y = None
 
 # caching the computation outcomes!
-centre_polygon_UHP = I
+centre_polygon_UHP = 2 + I
 num_sides = 3
 i_angle = pi / 4
-base_pt_x = -0.18686868686868685
-base_pt_y = -0.30808080808080807
+base_pt_x = 0.500000000000000
+base_pt_y = -0.5
 
 p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind = process_data(
     centre_polygon_UHP, num_sides, i_angle, base_pt_x, base_pt_y)
