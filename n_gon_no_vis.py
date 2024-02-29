@@ -24,7 +24,7 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
     n = int(num_sides)
 
     # base point
-    p_base = PD.get_point(CC(base_pt_x + I * base_pt_y))
+    p_base = PD.get_point(CC(base_pt_x + base_pt_y * I))
 
     # === Construct the base polygon
     # 1. Construct a polygon in UHP
@@ -34,7 +34,7 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
     # 2. Conformally transform: UHP -> PD
     points = list()
     for p in polygon._pts:
-        _p = moebius_transform(Matrix(2, [1.0, -I, 1.0, I]), p)
+        _p = moebius_transform(Matrix(2, [CC(1.0), CC(-I), CC(1.0), CC(I)]), p)
         _p = PD.get_point(CC(_p))  # Change the float-point precision
         # _p = p  # for UHP
         points.append(_p)
@@ -76,21 +76,6 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
     # reflect base point: n
     reflect_1st_pBase = [R * p_base for R in reflection_1st]
 
-    """ we don't use this anymore..
-    # === Check if the base point is in the base polygon
-    table_if_interior = [False] * len(reflect_1st_pBase)
-    _d_origin = abs(p_base.coordinates())
-    _d_origin = RR(_d_origin)
-    for i, p_reflect in enumerate(reflect_1st_pBase):
-        _d_p_reflect = p_base.dist(p_reflect)
-        print(i, _d_origin, _d_p_reflect, bool(_d_origin <= _d_p_reflect))
-        _d_p_reflect = RR(_d_p_reflect)
-        table_if_interior[i] = bool(_d_origin <= _d_p_reflect)  # p-base is closer to Origin -> Interior!
-    if not all(table_if_interior):
-        return []
-    # === Check if the base point is in the base polygon
-    """
-
     # get 2nd reflection transformations: n^2
     reflection_2nd = [l.reflection_involution() for l in reflect_1st_sides]
 
@@ -121,35 +106,37 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
         _l = PD.get_geodesic(p_base, p).perpendicular_bisector().complete()
         list_perp_bisec.append(_l)
 
-        # Compute all the intersections of perp-bisectors
-        intersect_p = list()
-        for i in range(len(list_perp_bisec)):
-            for j in range(i + 1, len(list_perp_bisec)):  # avoid the replicates
-                try:
-                    _p = list_perp_bisec[i].intersection(list_perp_bisec[j])[0]
-                    # _p = list_perp_bisec[j].intersection(list_perp_bisec[i])[0]
+    # Compute all the intersections of perp-bisectors
+    intersect_p = list()
+    for i in range(len(list_perp_bisec)):
+        for j in range(i + 1, len(list_perp_bisec)):  # avoid the replicates
+            try:
+                _p = list_perp_bisec[i].intersection(list_perp_bisec[j])[0]
+                # _p = list_perp_bisec[j].intersection(list_perp_bisec[i])[0]
 
-                    intersect_p.append(_p)
-                except Exception as e:
-                    msg = str(e)
-                    # print(msg)
+                intersect_p.append(_p)
+            except Exception as e:
+                msg = str(e)
+                # print(msg)
 
     ## avoid the replicates; the above workaround sometime doesn't work so manually double-check
     new_intersect_p = list()
+    # print([p.coordinates() for p in intersect_p])
+    # print([arg(p.coordinates()) for p in intersect_p])
     for i in range(len(intersect_p)):
         if_exist = False
         p = intersect_p[i]
         for j in range(i + 1, len(intersect_p)):
             pp = intersect_p[j]
+            # print(p.dist(pp))
             # if bool(_p.dist(__p) < 0.04):
             if bool(p.dist(pp) < 0.01):  # this value corresponds to float-pt precision
+            # if bool(p.dist(pp) < 10**-6):  # this value corresponds to float-pt precision
                 if_exist = True
                 break
         if not if_exist:
             new_intersect_p.append(p)
     intersect_p = new_intersect_p
-    # print(len(new_intersect_p))
-    # adfs
 
     table_if_exterior = np.zeros((len(intersect_p), len(reflect_2nd_pBase))).astype(bool)
     for i, p in enumerate(intersect_p):
