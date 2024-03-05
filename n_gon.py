@@ -1,11 +1,14 @@
-""" this version includes the computation of Dirichlet domain, which is super-expensive...."""
-
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
 from sage.geometry.hyperbolic_space.hyperbolic_interface import HyperbolicPlane
 from sage.geometry.hyperbolic_space.hyperbolic_model import moebius_transform
+from sage.plot.hyperbolic_polygon import HyperbolicPolygon
 from sage.plot.hyperbolic_regular_polygon import HyperbolicRegularPolygon
+
+base_polygon = HyperbolicPolygon([0.5, 0.5 * I, -0.5, -0.5 * I], model="PD", options={})
+# base_polygon = HyperbolicPolygon([0.8, 0.3 + 0.8*I, -0.8 - 0.4*I], model="PD", options={})
+base_polygon = None
 
 PD = HyperbolicPlane().PD()
 UHP = HyperbolicPlane().UHP()
@@ -20,24 +23,28 @@ RR = RealField(5)
 
 
 @cached_function
-def process_data(centre_polygon_UHP, num_sides, i_angle, base_pt_x, base_pt_y):
-    n = int(num_sides)
-
+def process_data(base_polygon, centre_polygon_UHP, num_sides, i_angle, base_pt_x, base_pt_y):
     # base point
     p_base = PD.get_point(CC(base_pt_x + base_pt_y * I))
 
     # === Construct the base polygon
-    # 1. Construct a polygon in UHP
-    center = CC(centre_polygon_UHP)
-    polygon = HyperbolicRegularPolygon(num_sides, i_angle, center, {})
+    if base_polygon is None:
+        # 1. Construct a polygon in UHP
+        center = CC(centre_polygon_UHP)
+        base_polygon = HyperbolicRegularPolygon(num_sides, i_angle, center, {})
 
-    # 2. Conformally transform: UHP -> PD
-    points = list()
-    for p in polygon._pts:
-        _p = moebius_transform(Matrix(2, [CC(1.0), CC(-I), CC(1.0), CC(I)]), p)
-        _p = PD.get_point(CC(_p))  # Change the float-point precision
-        # _p = p  # for UHP
-        points.append(_p)
+        # 2. Conformally transform: UHP -> PD
+        points = list()
+        for p in base_polygon._pts:
+            _p = moebius_transform(Matrix(2, [CC(1.0), CC(-I), CC(1.0), CC(I)]), p)
+            _p = PD.get_point(CC(_p))  # Change the float-point precision
+            # _p = p  # for UHP
+            points.append(_p)
+    else:
+        points = base_polygon._pts
+
+    # n = int(num_sides)
+    n = int(len(points))
 
     # define sides
     sides = list()
@@ -95,7 +102,7 @@ def process_data(centre_polygon_UHP, num_sides, i_angle, base_pt_x, base_pt_y):
                     # reflect_2nd_sides.append(R * _s)
 
     # Sort by complex-argument
-    reflect_2nd_pBase = sorted(reflect_2nd_pBase, key=lambda x: arg(x.coordinates()))
+    # reflect_2nd_pBase = sorted(reflect_2nd_pBase, key=lambda x: arg(x.coordinates()))
 
     # P-bisectors b/w 2nd reflections and base point
     list_perp_bisec = list()
@@ -118,8 +125,6 @@ def process_data(centre_polygon_UHP, num_sides, i_angle, base_pt_x, base_pt_y):
 
     ## avoid the replicates; the above workaround sometime doesn't work so manually double-check
     new_intersect_p = list()
-    # print([p.coordinates() for p in intersect_p])
-    # print([arg(p.coordinates()) for p in intersect_p])
     for i in range(len(intersect_p)):
         if_exist = False
         p = intersect_p[i]
@@ -128,7 +133,7 @@ def process_data(centre_polygon_UHP, num_sides, i_angle, base_pt_x, base_pt_y):
             # print(p.dist(pp))
             # if bool(_p.dist(__p) < 0.04):
             if bool(p.dist(pp) < 0.01):  # this value corresponds to float-pt precision
-            # if bool(p.dist(pp) < 10**-6):  # this value corresponds to float-pt precision
+                # if bool(p.dist(pp) < 10**-6):  # this value corresponds to float-pt precision
                 if_exist = True
                 break
         if not if_exist:
@@ -140,7 +145,7 @@ def process_data(centre_polygon_UHP, num_sides, i_angle, base_pt_x, base_pt_y):
         for j, p_2nd in enumerate(reflect_2nd_pBase):
             _d_p = p.dist(p_2nd)
             _d_p_base = p.dist(p_base)
-            _check = bool(_d_p_base < _d_p) or bool((_d_p_base - _d_p) <= 10**-9)
+            _check = bool(_d_p_base < _d_p) or bool((_d_p_base - _d_p) <= 10 ** -9)
             # print(i, j, _d_p, _d_p_base, _check)
             table_if_exterior[i, j] = _check
     # print(table_if_exterior)
@@ -156,18 +161,19 @@ prev_base_pt_x = None
 prev_base_pt_y = None
 
 # caching the computation outcomes!
-centre_polygon_UHP = 2 + I
+centre_polygon_UHP = I
 num_sides = 3
 i_angle = pi / 4
-base_pt_x = 0.500000000000000
-base_pt_y = -0.5
+base_pt_x = 0.0
+base_pt_y = -0.0
 
 p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind = process_data(
-    centre_polygon_UHP, num_sides, i_angle, base_pt_x, base_pt_y)
+    base_polygon, centre_polygon_UHP, num_sides, i_angle, base_pt_x, base_pt_y)
 
 
 @interact
-def _(centre_polygon_UHP=centre_polygon_UHP, num_sides=num_sides, i_angle=i_angle, base_pt_x=base_pt_x, base_pt_y=base_pt_y, auto_update=False,
+def _(centre_polygon_UHP=centre_polygon_UHP, num_sides=num_sides, i_angle=i_angle, base_pt_x=base_pt_x,
+      base_pt_y=base_pt_y, auto_update=False,
       if_plot_sides=True, if_plot_reflect_1st_sides=False, if_plot_reflect_1st_pBase=False,
       if_plot_reflect_2nd_sides=False, if_plot_reflect_2nd_pBase=False, if_plot_perp_bisec=True,
       if_show_dirichletDomain=True,
@@ -185,7 +191,7 @@ def _(centre_polygon_UHP=centre_polygon_UHP, num_sides=num_sides, i_angle=i_angl
         prev_base_pt_y = base_pt_y
 
         p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind = process_data(
-            centre_polygon_UHP, num_sides, i_angle, base_pt_x, base_pt_y)
+            base_polygon, centre_polygon_UHP, num_sides, i_angle, base_pt_x, base_pt_y)
 
     print(f"Found {len(ind)}-gon")
 
