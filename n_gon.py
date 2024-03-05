@@ -6,9 +6,9 @@ from sage.geometry.hyperbolic_space.hyperbolic_model import moebius_transform
 from sage.plot.hyperbolic_polygon import HyperbolicPolygon
 from sage.plot.hyperbolic_regular_polygon import HyperbolicRegularPolygon
 
-base_polygon = HyperbolicPolygon([0.5, 0.5 * I, -0.5, -0.5 * I], model="PD", options={})
+base_polygon = HyperbolicPolygon([0.7, 0.1 * I, -0.6, -0.2 * I], model="PD", options={})
 # base_polygon = HyperbolicPolygon([0.8, 0.3 + 0.8*I, -0.8 - 0.4*I], model="PD", options={})
-base_polygon = None
+# base_polygon = None
 
 PD = HyperbolicPlane().PD()
 UHP = HyperbolicPlane().UHP()
@@ -19,7 +19,7 @@ But, the following precision causes the runtime error of computation of others w
 """
 # CC = ComplexField(150)  # don't use this!
 # CC = ComplexField(20)  # don't use this!
-RR = RealField(5)
+# RR = RealField(5)
 
 
 @cached_function
@@ -54,6 +54,16 @@ def process_data(base_polygon, centre_polygon_UHP, num_sides, i_angle, base_pt_x
         else:
             _side = PD.get_geodesic(points[i], points[i + 1])
         sides.append(_side)
+
+    """ === Angle-Sum checker ===
+    angle = 0.0
+    for i in range(n):
+        if i + 1 == n:
+            angle += sides[i].angle(sides[0].complete())
+        else:
+            angle += sides[i].angle(sides[i + 1].complete())
+    print(f"Radian: {float(angle)}, Degree: {int(np.rad2deg(float(angle)))}")    
+    """
 
     # Get 1st reflection transformations
     reflection_1st = [l.reflection_involution() for l in sides]
@@ -162,7 +172,7 @@ prev_base_pt_y = None
 
 # caching the computation outcomes!
 centre_polygon_UHP = I
-num_sides = 3
+num_sides = 4
 i_angle = pi / 4
 base_pt_x = 0.0
 base_pt_y = -0.0
