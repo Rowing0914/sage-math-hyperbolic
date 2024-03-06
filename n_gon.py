@@ -17,6 +17,8 @@ UHP = HyperbolicPlane().UHP()
 Float-precision is crucial  to make computation of Dirichlet Domain work...
 But, the following precision causes the runtime error of computation of others when sides > 9...
 """
+
+
 # CC = ComplexField(150)  # don't use this!
 # CC = ComplexField(20)  # don't use this!
 # RR = RealField(5)
@@ -55,15 +57,16 @@ def process_data(base_polygon, centre_polygon_UHP, num_sides, i_angle, base_pt_x
             _side = PD.get_geodesic(points[i], points[i + 1])
         sides.append(_side)
 
-    """ === Angle-Sum checker ===
-    angle = 0.0
-    for i in range(n):
-        if i + 1 == n:
-            angle += sides[i].angle(sides[0].complete())
-        else:
-            angle += sides[i].angle(sides[i + 1].complete())
-    print(f"Radian: {float(angle)}, Degree: {int(np.rad2deg(float(angle)))}")    
-    """
+    # # === Angle-Sum checker ===
+    # angle = 0.0
+    # for i in range(n):
+    #     if i + 1 == n:
+    #         angle += sides[i].angle(sides[0].complete())
+    #     else:
+    #         angle += sides[i].angle(sides[i + 1].complete())
+    #     print(angle)
+    # print(f"Radian: {float(angle)}, Degree: {int(np.rad2deg(float(angle)))}")
+    # adsf
 
     # Get 1st reflection transformations
     reflection_1st = [l.reflection_involution() for l in sides]
@@ -109,7 +112,7 @@ def process_data(base_polygon, centre_polygon_UHP, num_sides, i_angle, base_pt_x
                 else:
                     # Transform sides
                     _s = reflect_1st_sides[j]
-                    # reflect_2nd_sides.append(R * _s)
+                    reflect_2nd_sides.append(R * _s)
 
     # Sort by complex-argument
     # reflect_2nd_pBase = sorted(reflect_2nd_pBase, key=lambda x: arg(x.coordinates()))
