@@ -6,8 +6,20 @@ from sage.geometry.hyperbolic_space.hyperbolic_model import moebius_transform
 from sage.plot.hyperbolic_polygon import HyperbolicPolygon
 from sage.plot.hyperbolic_regular_polygon import HyperbolicRegularPolygon
 
-base_polygon = HyperbolicPolygon([0.7, 0.1 * I, -0.6, -0.2 * I], model="PD", options={})
-# base_polygon = HyperbolicPolygon([0.8, 0.3 + 0.8*I, -0.8 - 0.4*I], model="PD", options={})
+# 4-gon
+# base_polygon = HyperbolicPolygon([0.25, 0.25 * I, -0.25, -0.25 * I], model="PD", options={})
+#
+# base_polygon = HyperbolicPolygon([0.5, 0.2 * I, -0.5, -0.2 * I], model="PD", options={})  # no
+# base_polygon = HyperbolicPolygon([0.4, 0.2 * I, -0.4, -0.2 * I], model="PD", options={})  # ok
+# base_polygon = HyperbolicPolygon([0.48, 0.2 * I, -0.48, -0.2 * I], model="PD", options={})  # no
+base_polygon = HyperbolicPolygon([0.45, 0.2 * I, -0.45, -0.2 * I], model="PD", options={})  # ok
+
+# 1st quadrant
+# base_polygon = HyperbolicPolygon([0.6 + 0.1 * I, 0.6 + 0.5 * I, 0.1 + 0.5 * I, 0.1 + 0.1 * I], model="PD", options={})
+
+# triangle
+base_polygon = HyperbolicPolygon([0.5 + 0.1 * I, 0.1 * I, -0.5 - 0.3 * I], model="PD",
+                                 options={})  # this creates overlap
 # base_polygon = None
 
 PD = HyperbolicPlane().PD()
@@ -43,7 +55,7 @@ def process_data(base_polygon, centre_polygon_UHP, num_sides, i_angle, base_pt_x
             # _p = p  # for UHP
             points.append(_p)
     else:
-        points = base_polygon._pts
+        points = [PD.get_point(CC(p)) for p in base_polygon._pts]
 
     # n = int(num_sides)
     n = int(len(points))
@@ -110,9 +122,10 @@ def process_data(base_polygon, centre_polygon_UHP, num_sides, i_angle, base_pt_x
                     reflect_2nd_pBase.append(_p)
                     diff_index.append(_diff)
                 else:
-                    # Transform sides
-                    _s = reflect_1st_sides[j]
-                    reflect_2nd_sides.append(R * _s)
+                    if i != j:
+                        # Transform sides
+                        _s = reflect_1st_sides[j]
+                        reflect_2nd_sides.append(R * _s)
 
     # Sort by complex-argument
     # reflect_2nd_pBase = sorted(reflect_2nd_pBase, key=lambda x: arg(x.coordinates()))
@@ -136,7 +149,7 @@ def process_data(base_polygon, centre_polygon_UHP, num_sides, i_angle, base_pt_x
                 msg = str(e)
                 # print(msg)
 
-    ## avoid the replicates; the above workaround sometime doesn't work so manually double-check
+    # avoid the replicates; the above workaround sometime doesn't work so manually double-check
     new_intersect_p = list()
     for i in range(len(intersect_p)):
         if_exist = False
@@ -177,8 +190,8 @@ prev_base_pt_y = None
 centre_polygon_UHP = I
 num_sides = 4
 i_angle = pi / 4
-base_pt_x = 0.0
-base_pt_y = -0.0
+base_pt_x, base_pt_y = 0.0, -0.0
+# base_pt_x, base_pt_y = 0.2, 0.2
 
 p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind = process_data(
     base_polygon, centre_polygon_UHP, num_sides, i_angle, base_pt_x, base_pt_y)
@@ -188,8 +201,8 @@ p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_
 def _(centre_polygon_UHP=centre_polygon_UHP, num_sides=num_sides, i_angle=i_angle, base_pt_x=base_pt_x,
       base_pt_y=base_pt_y, auto_update=False,
       if_plot_sides=True, if_plot_reflect_1st_sides=False, if_plot_reflect_1st_pBase=False,
-      if_plot_reflect_2nd_sides=False, if_plot_reflect_2nd_pBase=False, if_plot_perp_bisec=True,
-      if_show_dirichletDomain=True,
+      if_plot_reflect_2nd_sides=True, if_plot_reflect_2nd_pBase=False, if_plot_perp_bisec=False,
+      if_show_dirichletDomain=False,
       ):
     global prev_centre_polygon_UHP, prev_num_sides, prev_i_angle, prev_base_pt_x, prev_base_pt_y
     global p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind
@@ -219,7 +232,8 @@ def _(centre_polygon_UHP=centre_polygon_UHP, num_sides=num_sides, i_angle=i_angl
     # plot reflected sides
     if if_plot_reflect_1st_sides:
         for i in reflect_1st_sides:
-            P += i.plot()
+            if i not in sides:
+                P += i.plot(color="magenta")
 
     # plot 1st reflection of points
     if if_plot_reflect_1st_pBase:
@@ -229,7 +243,8 @@ def _(centre_polygon_UHP=centre_polygon_UHP, num_sides=num_sides, i_angle=i_angl
     # plot 2nd reflection of sides
     if if_plot_reflect_2nd_sides:
         for i in reflect_2nd_sides:
-            P += i.plot()
+            if i not in sides:  # todo: this is not working...
+                P += i.plot(color="purple")
 
     # plot 2nd reflection of points
     if if_plot_reflect_2nd_pBase:
