@@ -1,29 +1,26 @@
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
-from sage.geometry.hyperbolic_space.hyperbolic_interface import HyperbolicPlane
 from sage.geometry.hyperbolic_space.hyperbolic_model import moebius_transform
-from sage.plot.hyperbolic_polygon import HyperbolicPolygon
 from sage.plot.hyperbolic_regular_polygon import HyperbolicRegularPolygon
 
 # 4-gon
-# base_polygon = HyperbolicPolygon([0.25, 0.25 * I, -0.25, -0.25 * I], model="PD", options={})
+# base_polygon = HyperbolicPolygon([0.25, 0.25 * I, -0.25, -0.25 * I], model="PD", options={})  # right square
 #
 # base_polygon = HyperbolicPolygon([0.5, 0.2 * I, -0.5, -0.2 * I], model="PD", options={})  # no
+
+# 6/3: interesting comparison
 # base_polygon = HyperbolicPolygon([0.4, 0.2 * I, -0.4, -0.2 * I], model="PD", options={})  # ok
-# base_polygon = HyperbolicPolygon([0.48, 0.2 * I, -0.48, -0.2 * I], model="PD", options={})  # no
-base_polygon = HyperbolicPolygon([0.45, 0.2 * I, -0.45, -0.2 * I], model="PD", options={})  # ok
+# base_polygon = HyperbolicPolygon([0.45, 0.2 * I, -0.45, -0.2 * I], model="PD", options={})  # no
 
 # 1st quadrant
 # base_polygon = HyperbolicPolygon([0.6 + 0.1 * I, 0.6 + 0.5 * I, 0.1 + 0.5 * I, 0.1 + 0.1 * I], model="PD", options={})
 
 # triangle
-base_polygon = HyperbolicPolygon([0.5 + 0.1 * I, 0.1 * I, -0.5 - 0.3 * I], model="PD",
-                                 options={})  # this creates overlap
-# base_polygon = None
-
-PD = HyperbolicPlane().PD()
-UHP = HyperbolicPlane().UHP()
+# base_polygon = HyperbolicPolygon([0.5 + 0.1 * I, 0.1 * I, -0.5 - 0.3 * I], model="PD", options={})  # Overlap
+# base_polygon = HyperbolicPolygon([0.5 + 0.3 * I, 0.1 * I, -0.5 - 0.3 * I], model="PD", options={})  # Overlap
+# base_polygon = HyperbolicPolygon([0.5 + 0.5 * I, 0.1 + 0.3 * I, 0.2 + 0.11 * I], model="PD", options={})  # Overlap
+base_polygon = None
 
 """ Note
 Float-precision is crucial  to make computation of Dirichlet Domain work...
@@ -55,7 +52,8 @@ def process_data(base_polygon, centre_polygon_UHP, num_sides, i_angle, base_pt_x
             # _p = p  # for UHP
             points.append(_p)
     else:
-        points = [PD.get_point(CC(p)) for p in base_polygon._pts]
+        # points = [PD.get_point(CC(p)) for p in base_polygon._pts]
+        points = pts
 
     # n = int(num_sides)
     n = int(len(points))
@@ -69,16 +67,16 @@ def process_data(base_polygon, centre_polygon_UHP, num_sides, i_angle, base_pt_x
             _side = PD.get_geodesic(points[i], points[i + 1])
         sides.append(_side)
 
-    # # === Angle-Sum checker ===
-    # angle = 0.0
-    # for i in range(n):
-    #     if i + 1 == n:
-    #         angle += sides[i].angle(sides[0].complete())
-    #     else:
-    #         angle += sides[i].angle(sides[i + 1].complete())
-    #     print(angle)
-    # print(f"Radian: {float(angle)}, Degree: {int(np.rad2deg(float(angle)))}")
-    # adsf
+    # === Angle-Sum checker ===
+    angle = 0.0
+    for i in range(n):
+        if i + 1 == n:
+            angle += sides[i].angle(sides[0].complete())
+        else:
+            angle += sides[i].angle(sides[i + 1].complete())
+        print(angle)
+    print(f"Radian: {float(angle)}, Degree: {int(np.rad2deg(float(angle)))}")
+    adsf
 
     # Get 1st reflection transformations
     reflection_1st = [l.reflection_involution() for l in sides]
@@ -201,8 +199,8 @@ p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_
 def _(centre_polygon_UHP=centre_polygon_UHP, num_sides=num_sides, i_angle=i_angle, base_pt_x=base_pt_x,
       base_pt_y=base_pt_y, auto_update=False,
       if_plot_sides=True, if_plot_reflect_1st_sides=False, if_plot_reflect_1st_pBase=False,
-      if_plot_reflect_2nd_sides=True, if_plot_reflect_2nd_pBase=False, if_plot_perp_bisec=False,
-      if_show_dirichletDomain=False,
+      if_plot_reflect_2nd_sides=False, if_plot_reflect_2nd_pBase=False, if_plot_perp_bisec=True,
+      if_show_dirichletDomain=True,
       ):
     global prev_centre_polygon_UHP, prev_num_sides, prev_i_angle, prev_base_pt_x, prev_base_pt_y
     global p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind
