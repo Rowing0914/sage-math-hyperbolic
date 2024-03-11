@@ -4,56 +4,27 @@ import numpy as np
 from sage.geometry.hyperbolic_space.hyperbolic_model import moebius_transform
 from sage.plot.hyperbolic_regular_polygon import HyperbolicRegularPolygon
 
-# 4-gon
-# base_polygon = HyperbolicPolygon([0.25, 0.25 * I, -0.25, -0.25 * I], model="PD", options={})  # right square
-#
-# base_polygon = HyperbolicPolygon([0.5, 0.2 * I, -0.5, -0.2 * I], model="PD", options={})  # no
-
-# 6/3: interesting comparison
-# base_polygon = HyperbolicPolygon([0.4, 0.2 * I, -0.4, -0.2 * I], model="PD", options={})  # ok
-# base_polygon = HyperbolicPolygon([0.45, 0.2 * I, -0.45, -0.2 * I], model="PD", options={})  # no
-
-# 1st quadrant
-# base_polygon = HyperbolicPolygon([0.6 + 0.1 * I, 0.6 + 0.5 * I, 0.1 + 0.5 * I, 0.1 + 0.1 * I], model="PD", options={})
-
-# triangle
-# base_polygon = HyperbolicPolygon([0.5 + 0.1 * I, 0.1 * I, -0.5 - 0.3 * I], model="PD", options={})  # Overlap
-# base_polygon = HyperbolicPolygon([0.5 + 0.3 * I, 0.1 * I, -0.5 - 0.3 * I], model="PD", options={})  # Overlap
-# base_polygon = HyperbolicPolygon([0.5 + 0.5 * I, 0.1 + 0.3 * I, 0.2 + 0.11 * I], model="PD", options={})  # Overlap
-base_polygon = None
-
-""" Note
-Float-precision is crucial  to make computation of Dirichlet Domain work...
-But, the following precision causes the runtime error of computation of others when sides > 9...
-"""
-
-
-# CC = ComplexField(150)  # don't use this!
-# CC = ComplexField(20)  # don't use this!
-# RR = RealField(5)
+PD = HyperbolicPlane().PD()
+UHP = HyperbolicPlane().UHP()
 
 
 @cached_function
-def process_data(base_polygon, centre_polygon_UHP, num_sides, i_angle, base_pt_x, base_pt_y):
+def process_data(centre_polygon_UHP, num_sides, i_angle, base_pt_x, base_pt_y):
     # base point
     p_base = PD.get_point(CC(base_pt_x + base_pt_y * I))
 
     # === Construct the base polygon
-    if base_polygon is None:
-        # 1. Construct a polygon in UHP
-        center = CC(centre_polygon_UHP)
-        base_polygon = HyperbolicRegularPolygon(num_sides, i_angle, center, {})
+    # 1. Construct a polygon in UHP
+    center = CC(centre_polygon_UHP)
+    base_polygon = HyperbolicRegularPolygon(num_sides, i_angle, center, {})
 
-        # 2. Conformally transform: UHP -> PD
-        points = list()
-        for p in base_polygon._pts:
-            _p = moebius_transform(Matrix(2, [CC(1.0), CC(-I), CC(1.0), CC(I)]), p)
-            _p = PD.get_point(CC(_p))  # Change the float-point precision
-            # _p = p  # for UHP
-            points.append(_p)
-    else:
-        # points = [PD.get_point(CC(p)) for p in base_polygon._pts]
-        points = pts
+    # 2. Conformally transform: UHP -> PD
+    points = list()
+    for p in base_polygon._pts:
+        _p = moebius_transform(Matrix(2, [CC(1.0), CC(-I), CC(1.0), CC(I)]), p)
+        _p = PD.get_point(CC(_p))  # Change the float-point precision
+        # _p = p  # for UHP
+        points.append(_p)
 
     # n = int(num_sides)
     n = int(len(points))
@@ -67,16 +38,16 @@ def process_data(base_polygon, centre_polygon_UHP, num_sides, i_angle, base_pt_x
             _side = PD.get_geodesic(points[i], points[i + 1])
         sides.append(_side)
 
-    # === Angle-Sum checker ===
-    angle = 0.0
-    for i in range(n):
-        if i + 1 == n:
-            angle += sides[i].angle(sides[0].complete())
-        else:
-            angle += sides[i].angle(sides[i + 1].complete())
-        print(angle)
-    print(f"Radian: {float(angle)}, Degree: {int(np.rad2deg(float(angle)))}")
-    adsf
+    # # === Angle-Sum checker ===
+    # angle = 0.0
+    # for i in range(n):
+    #     if i + 1 == n:
+    #         angle += sides[i].angle(sides[0].complete())
+    #     else:
+    #         angle += sides[i].angle(sides[i + 1].complete())
+    #     print(angle)
+    # print(f"Radian: {float(angle)}, Degree: {int(np.rad2deg(float(angle)))}")
+    # adsf
 
     # Get 1st reflection transformations
     reflection_1st = [l.reflection_involution() for l in sides]
@@ -192,7 +163,7 @@ base_pt_x, base_pt_y = 0.0, -0.0
 # base_pt_x, base_pt_y = 0.2, 0.2
 
 p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind = process_data(
-    base_polygon, centre_polygon_UHP, num_sides, i_angle, base_pt_x, base_pt_y)
+    centre_polygon_UHP, num_sides, i_angle, base_pt_x, base_pt_y)
 
 
 @interact
@@ -215,7 +186,7 @@ def _(centre_polygon_UHP=centre_polygon_UHP, num_sides=num_sides, i_angle=i_angl
         prev_base_pt_y = base_pt_y
 
         p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind = process_data(
-            base_polygon, centre_polygon_UHP, num_sides, i_angle, base_pt_x, base_pt_y)
+            centre_polygon_UHP, num_sides, i_angle, base_pt_x, base_pt_y)
 
     print(f"Found {len(ind)}-gon")
 
