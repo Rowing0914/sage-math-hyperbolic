@@ -26,6 +26,7 @@ def process_data(centre_polygon_UHP, num_sides, i_angle, base_pt_x, base_pt_y):
         # _p = p  # for UHP
         points.append(_p)
 
+    # print(f"Vertices of Base Polygon: {[p.coordinates() for p in points]}")
     # n = int(num_sides)
     n = int(len(points))
 
