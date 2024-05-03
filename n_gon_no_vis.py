@@ -20,12 +20,7 @@ But, the following precision causes the runtime error of computation of others w
 RR = RealField(5)
 
 
-def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
-    n = int(num_sides)
-
-    # base point
-    p_base = PD.get_point(CC(base_pt_x + base_pt_y * I))
-
+def make_polygon(num_sides, i_angle):
     # === Construct the base polygon
     # 1. Construct a polygon in UHP
     center = CC(I)
@@ -47,6 +42,15 @@ def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
         else:
             _side = PD.get_geodesic(points[i], points[i + 1])
         sides.append(_side)
+    return points, sides
+
+
+def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
+    n = int(num_sides)
+
+    # base point
+    p_base = PD.get_point(CC(base_pt_x + base_pt_y * I))
+    points, sides = make_polygon(num_sides, i_angle)
 
     # === Check if the base point is in the base polygon
     if base_pt_x == 0: return []  # we don't deal w/h the y-axis (infinity)
@@ -167,10 +171,6 @@ if __name__ == '__main__':
     base_pt_x = -0.18686868686868685
     base_pt_y = -0.30808080808080807
 
-    # ind = process_data(num_sides, i_angle, base_pt_x, base_pt_y)
-    # print(len(ind))
-    # asdf
-
     # === Grid search
     import time, datetime
     start = time.time()
@@ -178,11 +178,14 @@ if __name__ == '__main__':
     pool = multiprocessing.Pool()
     results = {}
     search_space = np.linspace(-0.5, 0.5, num_search_pt)
+    
+    # Interior points
     for base_pt_x in search_space:
         for base_pt_y in search_space:
             args = (num_sides, i_angle, base_pt_x, base_pt_y)
             _key = f"({base_pt_x}, {base_pt_y})"
             results[_key] = pool.apply_async(process_data_wrapper, (args,))
+    # Boundary points
 
     pool.close()
     pool.join()

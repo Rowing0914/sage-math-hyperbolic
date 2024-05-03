@@ -1,7 +1,7 @@
-from sage.all import *
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap, BoundaryNorm
+from matplotlib.patches import Circle
 
 import argparse
 parser = argparse.ArgumentParser()
@@ -9,7 +9,7 @@ parser.add_argument("--num_sides", type=int, default=3)
 args = parser.parse_args()
 
 num_sides = args.num_sides
-df = pd.read_csv(f"{num_sides}-gon.csv")
+df = pd.read_csv(f"./plots/{num_sides}-gon.csv")
 df[['X', 'Y']] = df['Coordinates'].str.strip('()').str.split(', ', expand=True).astype(float)
 
 # Define the discrete color map for integer values
@@ -30,8 +30,24 @@ scatter = ax.scatter(df['X'], df['Y'], c=df['#sides'], cmap=new_cmap, s=10, norm
 cbar = plt.colorbar(scatter, label='Number of Sides', ticks=tick_positions)
 cbar.set_ticklabels(range(num_colors))
 plt.title('2D Scatter Plot of Polygon Sides')
-c = circle((0, 0), 1)
-c_matplotlib = c.matplotlib(figure=fig, sub=ax)
+
+# Remove x and y sides
+ax.spines['left'].set_visible(False)
+ax.spines['bottom'].set_visible(False)
+ax.spines['right'].set_visible(False)
+ax.spines['top'].set_visible(False)
+
+# Add x and y axes in the middle
+ax.axhline(0, color='black',linewidth=0.5)
+ax.axvline(0, color='black',linewidth=0.5)
+
+# Move left y-axis and bottom x-axis to centre, passing through (0,0)
+ax.spines['left'].set_position('center')
+ax.spines['bottom'].set_position('center')
+
+circle = Circle((0, 0), 1, edgecolor='black', facecolor='none')
+ax.add_patch(circle)
+
 ax.axis('equal')  # Set aspect ratio to be equal
 plt.show()
-plt.savefig(f"{num_sides}-gon.png")
+plt.savefig(f"./plots/{num_sides}-gon.pdf", dpi=300)
