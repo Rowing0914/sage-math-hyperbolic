@@ -7,12 +7,11 @@ UHP = HyperbolicPlane().UHP()
 
 
 @cached_function
-def process_data(p1, p2, p3, p4, base_pt_x, base_pt_y):
+def process_data(free_pt_x, free_pt_y, base_pt_x, base_pt_y):
     # base point
     p_base = PD.get_point(CC(base_pt_x + base_pt_y * I))
 
     free_pt_x, free_pt_y = float(free_pt_x), float(free_pt_y)
-    p1, p2, p3, p4 =
     points = [
         PD.get_point(1.0),
         # we can't do this as SageMath proceeds w/h a symbolic expression thus fraction keeps getting complex...
@@ -54,6 +53,15 @@ def process_data(p1, p2, p3, p4, base_pt_x, base_pt_y):
 
     # reflect base point: n
     reflect_1st_pBase = [R * p_base for R in reflection_1st]
+
+    """
+    _sorted = sorted(reflect_1st_pBase, key=lambda x: arg(x.coordinates()))
+    _sorted = [_p.coordinates() for _p in _sorted]
+    cr = ((_sorted[0] - _sorted[2]) / (_sorted[0] - _sorted[3])) * ((_sorted[1] - _sorted[3]) / (_sorted[1] - _sorted[2]))
+    cross_ratio = cr.imag()
+    print(cross_ratio, cr)
+    asdf
+    """
 
     # get 2nd reflection transformations: n^2
     reflection_2nd = [l.reflection_involution() for l in reflect_1st_sides]
