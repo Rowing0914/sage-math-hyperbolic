@@ -154,6 +154,9 @@ def process_data(centre_polygon_UHP, i_angle, base_pt_x, base_pt_y):
     # print(table_if_exterior)
     ind = [intersect_p[i].coordinates() for i, row in enumerate(table_if_exterior) if np.all(row)]
     # ind = [intersect_p[i].coordinates() for i, row in enumerate(table_if_exterior)]
+
+    # Add the diagonals
+    sides += [PD.get_geodesic(points[0], points[2]), PD.get_geodesic(points[1], points[3])]
     return p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind
 
 
