@@ -8,14 +8,20 @@ UHP = HyperbolicPlane().UHP()
 
 @cached_function
 def process_data(free_pt_x, free_pt_y, base_pt_x, base_pt_y):
+    """ (free_pt_x, free_pt_y) are the coordinate in UHP! """
     # base point
     p_base = PD.get_point(CC(base_pt_x + base_pt_y * I))
 
-    free_pt_x, free_pt_y = float(free_pt_x), float(free_pt_y)
+    # Cayley transform: UHP -> PD
+    z = CC(free_pt_x, free_pt_y)
+    z = (z - I) / (z + I)
+
+    # we need this as SageMath proceeds w/h a symbolic expression thus fraction keeps getting complex...
+    # and that makes the computation time incredibly long.
+    free_pt_x, free_pt_y = float(z.real()), float(z.imag())
+
     points = [
         PD.get_point(1.0),
-        # we can't do this as SageMath proceeds w/h a symbolic expression thus fraction keeps getting complex...
-        # and this makes the computation time incredibly long.
         PD.get_point(free_pt_x + free_pt_y * I),
         PD.get_point(-1.0),
         PD.get_point(-I),
@@ -154,7 +160,8 @@ prev_base_pt_x = None
 prev_base_pt_y = None
 
 # caching the computation outcomes!
-free_pt_x, free_pt_y = sqrt(2) / 2, sqrt(2) / 2
+# free_pt_x, free_pt_y = sqrt(2) / 2, sqrt(2) / 2
+free_pt_x, free_pt_y = -1.0, 0.0
 base_pt_x, base_pt_y = 0.2, 0.2
 
 p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind = process_data(
