@@ -1,35 +1,39 @@
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
+from sage.geometry.hyperbolic_space.hyperbolic_model import moebius_transform
+from sage.plot.hyperbolic_regular_polygon import HyperbolicRegularPolygon
 
 PD = HyperbolicPlane().PD()
 UHP = HyperbolicPlane().UHP()
 
 
 @cached_function
-def process_data(free_pt_x, free_pt_y, base_pt_x, base_pt_y):
-    """ (free_pt_x, free_pt_y) are the coordinate in UHP! """
+def process_data(centre_polygon_UHP, i_angle, base_pt_x, base_pt_y):
     # base point
     p_base = PD.get_point(CC(base_pt_x + base_pt_y * I))
 
-    # Cayley transform: UHP -> PD
-    z = CC(free_pt_x, free_pt_y)
-    z = (z - I) / (z + I)
+    # === Construct the base polygon
+    """ Reflect the base triangle to construct the oblique quadrilateral! """
 
-    # we need this as SageMath proceeds w/h a symbolic expression thus fraction keeps getting complex...
-    # and that makes the computation time incredibly long.
-    free_pt_x, free_pt_y = float(z.real()), float(z.imag())
+    # 1. Construct a polygon in UHP
+    center = CC(centre_polygon_UHP)
+    base_polygon = HyperbolicRegularPolygon(3, i_angle, center, {})
 
-    points = [
-        PD.get_point(1.0),
-        PD.get_point(free_pt_x + free_pt_y * I),
-        PD.get_point(-1.0),
-        PD.get_point(-I),
-    ]
-    print("Vertices of base polygon", points)
+    # 2. Conformally transform: UHP -> PD
+    points = list()
+    for p in base_polygon._pts:
+        _p = moebius_transform(Matrix(2, [CC(1.0), CC(-I), CC(1.0), CC(I)]), p)
+        _p = PD.get_point(CC(_p))  # Change the float-point precision
+        # _p = p  # for UHP
+        points.append(_p)
 
-    # print(f"Vertices of Base Polygon: {[p.coordinates() for p in points]}")
-    # n = int(num_sides)
+    # Reflect the sides using one of the sides
+    _side = PD.get_geodesic(points[0], points[1])
+    reflection_1st = _side.reflection_involution()
+    points += [reflection_1st * points[-1]]  # Add the reflected third vertex
+    points = sorted(points, key=lambda x: arg(x.coordinates()))  # Need to Sort the vertices
+
     n = int(len(points))
 
     # define sides
@@ -40,6 +44,18 @@ def process_data(free_pt_x, free_pt_y, base_pt_x, base_pt_y):
         else:
             _side = PD.get_geodesic(points[i], points[i + 1])
         sides.append(_side)
+
+    # # === Angle-Sum checker ===
+    # angle = 0.0
+    # for i in range(n):
+    #     if i + 1 == n:
+    #         _angle = sides[i].angle(sides[0].complete())
+    #     else:
+    #         _angle = sides[i].angle(sides[i + 1].complete())
+    #     print(f"Vertex Angle: {int(np.ceil(np.rad2deg(float(_angle))))}")
+    #     angle += _angle
+    # print(f"Angle sum: {int(np.ceil(np.rad2deg(float(angle))))}")
+    # adsf
 
     # Get 1st reflection transformations
     reflection_1st = [l.reflection_involution() for l in sides]
@@ -59,15 +75,6 @@ def process_data(free_pt_x, free_pt_y, base_pt_x, base_pt_y):
 
     # reflect base point: n
     reflect_1st_pBase = [R * p_base for R in reflection_1st]
-
-    """
-    _sorted = sorted(reflect_1st_pBase, key=lambda x: arg(x.coordinates()))
-    _sorted = [_p.coordinates() for _p in _sorted]
-    cr = ((_sorted[0] - _sorted[2]) / (_sorted[0] - _sorted[3])) * ((_sorted[1] - _sorted[3]) / (_sorted[1] - _sorted[2]))
-    cross_ratio = cr.imag()
-    print(cross_ratio, cr)
-    asdf
-    """
 
     # get 2nd reflection transformations: n^2
     reflection_2nd = [l.reflection_involution() for l in reflect_1st_sides]
@@ -150,48 +157,47 @@ def process_data(free_pt_x, free_pt_y, base_pt_x, base_pt_y):
 
     # Add the diagonals
     sides += [PD.get_geodesic(points[0], points[2]), PD.get_geodesic(points[1], points[3])]
-
     return p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind
 
 
-prev_free_pt_x = None
-prev_free_pt_y = None
+prev_centre_polygon_UHP = None
+prev_i_angle = None
 prev_base_pt_x = None
 prev_base_pt_y = None
 
 # caching the computation outcomes!
-# free_pt_x, free_pt_y = sqrt(2) / 2, sqrt(2) / 2
-free_pt_x, free_pt_y = -1.0, 0.0
-base_pt_x, base_pt_y = 0.2, 0.2
+centre_polygon_UHP = I
+i_angle = pi / 4
+base_pt_x, base_pt_y = 0.0, 0.0
 
 p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind = process_data(
-    free_pt_x, free_pt_y, base_pt_x, base_pt_y)
+    centre_polygon_UHP, i_angle, base_pt_x, base_pt_y)
 
 
 @interact
-def _(free_pt_x=free_pt_x, free_pt_y=free_pt_y, base_pt_x=base_pt_x, base_pt_y=base_pt_y, auto_update=False,
+def _(centre_polygon_UHP=centre_polygon_UHP, i_angle=i_angle, base_pt_x=base_pt_x,
+      base_pt_y=base_pt_y, auto_update=False,
       if_plot_sides=True, if_plot_reflect_1st_sides=False, if_plot_reflect_1st_pBase=False,
       if_plot_reflect_2nd_sides=False, if_plot_reflect_2nd_pBase=False, if_plot_perp_bisec=True,
-      if_show_dirichletDomain=False,
       ):
-    global prev_free_pt_x, prev_free_pt_y, prev_base_pt_x, prev_base_pt_y
+    global prev_centre_polygon_UHP, prev_i_angle, prev_base_pt_x, prev_base_pt_y
     global p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind
 
-    if_rerun = free_pt_x != prev_free_pt_x or free_pt_y != prev_free_pt_y or base_pt_x != prev_base_pt_x or base_pt_y != prev_base_pt_y
+    if_rerun = centre_polygon_UHP != prev_centre_polygon_UHP or i_angle != prev_i_angle or base_pt_x != prev_base_pt_x or base_pt_y != prev_base_pt_y
     if if_rerun:  # Check if num_sides has changed
         # Update the previous value of num_sides
-        prev_free_pt_x = free_pt_x
-        prev_free_pt_y = free_pt_y
+        prev_centre_polygon_UHP = centre_polygon_UHP
+        prev_i_angle = i_angle
         prev_base_pt_x = base_pt_x
         prev_base_pt_y = base_pt_y
 
         p_base, sides, reflect_1st_sides, reflect_1st_pBase, reflect_2nd_sides, reflect_2nd_pBase, list_perp_bisec, diff_index, ind = process_data(
-            free_pt_x, free_pt_y, base_pt_x, base_pt_y)
+            centre_polygon_UHP, i_angle, base_pt_x, base_pt_y)
 
     # print(f"Found {len(ind)}-gon")
 
     # plot base point
-    P = p_base.show(size=30, color="blue", legend_label='p-base')
+    P = p_base.show(size=50, color="blue", legend_label='p-base')
 
     # Plot sides
     if if_plot_sides:
@@ -231,14 +237,6 @@ def _(free_pt_x=free_pt_x, free_pt_y=free_pt_y, base_pt_x=base_pt_x, base_pt_y=b
             _name = f"L_i_i+{_diff}"
             if _name not in used_colors:
                 used_colors[_name] = _c
-
-    if if_show_dirichletDomain:
-        ind = sorted(ind, key=arg)  # sort the vertices by complex-argument for correct instantiation of polygon!
-        for p in ind:
-            p = PD.get_point(coordinates=p)
-            P += p.show(color="red", size=20)
-        g = hyperbolic_polygon(pts=ind, model="PD", fill=True, alpha=0.0)
-        P += g.plot()
 
     P.show(axes=True)
 
