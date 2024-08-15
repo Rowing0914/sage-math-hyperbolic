@@ -21,6 +21,8 @@ RR = RealField(5)
 
 
 def make_polygon(num_sides, i_angle):
+    n = int(num_sides)
+
     # === Construct the base polygon
     # 1. Construct a polygon in UHP
     center = CC(I)
@@ -47,7 +49,7 @@ def make_polygon(num_sides, i_angle):
 
 def process_data(num_sides, i_angle, base_pt_x, base_pt_y):
     n = int(num_sides)
-
+    
     # base point
     p_base = PD.get_point(CC(base_pt_x + base_pt_y * I))
     points, sides = make_polygon(num_sides, i_angle)
@@ -202,5 +204,5 @@ if __name__ == '__main__':
     df = pd.DataFrame([results])
     df = df.T.reset_index()
     df.columns = ['Coordinates', '#sides']
-    df.to_csv(f"{num_sides}-gon.csv")
+    df.to_csv(f"./plots/{num_sides}-gon.csv")
     print(df)
